@@ -1,0 +1,31 @@
+use dsvpagedb;
+
+SELECT * FROM `wp_posts` p
+join `wp_postmeta` m on p.id=m.post_id
+WHERE id in (18,19)
+
+
+use dsvpagedb;
+
+select * from `wp_terms` t
+join `wp_term_taxonomy` tax on tax.term_id=t.term_id
+where tax.taxonomy="shared-file-category"
+
+use dsvpagedb;
+
+SELECT * FROM `wp_posts` p
+join `wp_postmeta` m on p.id=m.post_id
+left join `wp_term_relationships` trel on trel.object_id=p.id
+left join `wp_terms` t on trel.term_taxonomy_id=t.term_id
+left join `wp_term_taxonomy` tax on tax.term_id=t.term_id
+WHERE id in (18,19)
+
+
+
+Feld wo gespeichert:
+Title: post_title: 
+
+_sf_description
+
+Custom Fields, CF_ID 1:
+_sf_file_upload_cf_1 Glawischnig - Mittergradnegger
