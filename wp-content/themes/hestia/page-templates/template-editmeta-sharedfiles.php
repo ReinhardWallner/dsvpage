@@ -51,40 +51,36 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	$obj->value = $value;
 	array_push($checkboxArray, [$name => $obj]);
 
+	
+	// $val = "No";
+	// if ($value == true)
+	// 	$val = "Yes";
+
 	// if ($hidden) {
 	// 	if ($value)
-	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . '" value="' . trim($value) . '" ' . $value . '"/>';
+	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked value=' . $value . ' />';
 	// 	else
-	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . '" value=null' . '"/>';
+	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . ' value=' . $value . ' "/>';
 	// } else {
 	// 	if ($value)
-	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . '" value="' . trim($value) . '" ' . $value . ' onchange="checkboxOnChange(this.name, this.value)"/>';
+	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked value=' . $value . ' onchange="checkboxOnChange(this.name, this.value)"/>';
 	// 	else
-	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . '" value=null' . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
+	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . ' value=' . $value . ' onchange="checkboxOnChange(this.name, this.checked)"/>';
 	// }
-
+	
+	
 	if ($hidden) {
 		if ($value)
-			return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked="' . $value . '" ' . $value . '"/>';
+			return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" />';
 		else
-			return '<input type="hidden" name="' . $name . '" id="' . $name  . '"/>';
+			return '<input type="hidden" name="' . $name . '" id="' . $name . '" value="' . $value . '" "/>';
 	} else {
 		if ($value)
-			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked="' . $value . '" ' . $value . ' onchange="checkboxOnChange(this.name, this.value)"/>';
+			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" onchange="checkboxOnChange(this.name, this.value)"/>';
 		else
-			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
+			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
 	}
-	// if ($hidden) {
-	// 	if ($value)
-	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . '" ' . $value . '"/>';
-	// 	else
-	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . '"/>';
-	// } else {
-	// 	if ($value)
-	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . '" ' . $value . ' onchange="checkboxOnChange(this.name, this.value)"/>';
-	// 	else
-	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
-	// }
+	
 }
 ?>
 
@@ -92,7 +88,7 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 //$table = '<form method="post" enctype="multipart/form-data" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
 $table .= '<table style="margin: 10px;">';
-$table .= "<tr><td>Id</td><td>Title</td>";
+$table .= "<tr><td>Id</td><td>Titel</td><td>Beschreibung</td>";
 
 $args = array('post_type' => 'shared_file', 'posts_per_page' => 10);
 
@@ -138,9 +134,20 @@ if ($the_query_terms->have_posts()):
 		$table .= getInputField($file_id, null, '_sf_file_title_origin_' . $file_id, get_the_title(), $inputArray, true);
 		$table .= '</td>';
 
+
 		// Custom fields
 		$s = get_option('shared_files_settings');
 		$c = get_post_custom($file_id);
+		$desc = $c["_sf_description"][0];
+		if ($desc !== null && trim($desc) !== '') {
+			$desc = str_replace('<p>', '', $desc);
+			$desc = str_replace('</p>', '', $desc);
+		}
+
+		$table .= '<td>';
+		$table .= getInputField($file_id, null, '_sf_file_description_' . $file_id, $desc, $inputArray);
+		$table .= getInputField($file_id, null, '_sf_file_description_origin_' . $file_id, $desc, $inputArray, true);
+		$table .= '</td>';
 
 		$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 		for ($n = 1; $n < $custom_fields_cnt; $n++) {
@@ -191,12 +198,12 @@ if ($the_query_terms->have_posts()):
 				}
 				$catValue = "";
 				if ($exists) {
-					$catValue = true;
+					$catValue = "on";
 				}
 
 				$table .= '<td>';
 				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->name, $catValue, $checkboxArray);
-				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->name, $catValue, $checkboxArray, true);
+				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->name, $catValue, $checkboxArray, true);
 				$table .= '</td>';
 			}
 
@@ -242,6 +249,10 @@ if ($the_query_terms->have_posts()):
 	}
 	function checkboxOnChange(name, data) {
 		this.handleInputOnChange(name, data, window.checkboxArrayJs, window.checkboxArrayJsOriginal, "modified-checkbox")
+		var el = document.getElementById(name);
+		if(data == true)
+		el.value = "on";
+
 		this.computeAnyChangedData();
 	}
 

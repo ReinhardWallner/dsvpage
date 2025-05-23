@@ -35,17 +35,17 @@ if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 	wp_die(__('A post type mismatch has been detected.'), __('Sorry, you are not allowed to edit this item.'), 400);
 }
 
-// Read post data
-$title_values = [];
-$desc_values = [];
-$customfield_values = [];
-$tag_values = [];
-$category_values = [];
-
 
 $vars = $_POST;
+error_log("POST VALUES " . print_r($vars, true));
 
 if (gettype($vars) == "array") {
+	// Read post data
+	$title_values = [];
+	$desc_values = [];
+	$customfield_values = [];
+	$tag_values = [];
+	$category_values = [];
 
 	$keys = array_keys($vars);
 	foreach ($keys as $key) {
@@ -65,32 +65,37 @@ if (gettype($vars) == "array") {
 			$file_id = addDoubleIdValuesToArray($vars, $key, $category_values);
 		}
 	}
+
+
+	error_log("Title values:" . print_r($title_values, true));
+	error_log("Description values:" . print_r($desc_values, true));
+	error_log("Tag values:" . print_r($tag_values, true));
+	error_log("Custom Field values:" . print_r($customfield_values, true));
+	error_log("Category values:" . print_r($category_values, true));
+
+	// Update values
+	$tfiltered = array_filter($title_values, "modifiedValues");
+	error_log("titles filtered " . print_r($tfiltered, true));
+
+	saveTitles($tfiltered);
+
+	$desfiltered = array_filter($desc_values, "modifiedValues");
+	saveDescriptions($desfiltered);
+
+	$tagsfiltered = array_filter($tag_values, "modifiedValues");
+	saveTags($tagsfiltered);
+
+	$customfield_valuesfiltered = modifiedValuesArray($customfield_values);
+	saveCustomFields($customfield_valuesfiltered);
+
+	$category_valuesfiltered = modifiedValuesArray($category_values);
+	saveCategories($category_valuesfiltered);
 }
-
-
-
-error_log("Title values:" . print_r($title_values, true));
-error_log("Description values:" . print_r($desc_values, true));
-error_log("Tag values:" . print_r($tag_values, true));
-error_log("Custom Field values:" . print_r($customfield_values, true));
-error_log("Category values:" . print_r($category_values, true));
-
-// Update values
-$tfiltered = array_filter($title_values, "modifiedValues");
-error_log("titles filtered " . print_r($tfiltered, true));
-
-saveTitles($tfiltered);
-
-$desfiltered = array_filter($desc_values, "modifiedValues");
-saveDescriptions($desfiltered);
-
-$tagsfiltered = array_filter($tag_values, "modifiedValues");
-saveTags($tagsfiltered);
-
 
 /*TODOs:
 0. Checkbox-Values werden nicht genau so übergeben, CHECKED STATUS???
 0. Description anzeigen und speichern
+0. Umlaute, Sonderzeichen in allen Feldern prüfen
 
 1. Speichern einer einfachen Variable
 2. Finden der geänderten Werte: 
@@ -99,11 +104,13 @@ saveTags($tagsfiltered);
 	c) optimal wäre es, die Formulardaten per ajax zu schicken (jquery)
 3. Speichern aller Werte
 * Welche Spalten fehlen noch: Description
-Umlaute, Sonderzeichen in allen Feldern prüfen
+	* Info, dass Speichern erfolgreich war
 4. Paging
-5. Tests
-6. Doku, welche Files alles erstellt und angepasst werden müssen
-7. Integration
+5. Verwerfen Button (reload)
+6. Suche nach Text und Kategorien-Filterung
+6. Tests
+7. Doku, welche Files alles erstellt und angepasst werden müssen
+8. Integration
 */
 
 wp_redirect($sendback_test);

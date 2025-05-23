@@ -31,6 +31,30 @@ function saveDescriptions($desfiltered)
 	}
 }
 
+function saveCustomFields($customfield_values)
+{
+	foreach ($customfield_values as $file_id => $value) {
+		// error_log("saveCustomFields fileid " . $file_id);
+		foreach ($value as $cf_id => $field_value) {
+			// error_log("saveCustomFields cf_id " . $cf_id . ", " . print_r($field_value, true));
+			$res = update_post_meta($file_id, '_sf_file_upload_cf_' . $cf_id, $field_value["value"]);
+			// error_log("update RESULT " . print_r($res, true));
+		}
+	}
+}
+
+function saveCategories($category_valuesfiltered)
+{
+	foreach ($category_valuesfiltered as $file_id => $value) {
+		 error_log("saveCustomFields fileid " . $file_id);
+		foreach ($value as $cf_id => $field_value) {
+			 error_log("saveCustomFields cf_id " . $cf_id . ", " . print_r($field_value, true));
+			// $res = update_post_meta($file_id, '_sf_file_upload_cf_' . $cf_id, $field_value["value"]);
+			//  error_log("update RESULT " . print_r($res, true));
+		}
+	}
+}
+
 function saveTags($tagfiltered)
 {
 	$alltags = get_terms('shared-file-tag', array('hide_empty' => 0));
