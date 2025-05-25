@@ -51,7 +51,7 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	$obj->value = $value;
 	array_push($checkboxArray, [$name => $obj]);
 
-	
+
 	// $val = "No";
 	// if ($value == true)
 	// 	$val = "Yes";
@@ -67,8 +67,8 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	// 	else
 	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . ' value=' . $value . ' onchange="checkboxOnChange(this.name, this.checked)"/>';
 	// }
-	
-	
+
+
 	if ($hidden) {
 		if ($value)
 			return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" />';
@@ -80,7 +80,7 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 		else
 			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
 	}
-	
+
 }
 ?>
 
@@ -202,8 +202,8 @@ if ($the_query_terms->have_posts()):
 				}
 
 				$table .= '<td>';
-				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->name, $catValue, $checkboxArray);
-				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->name, $catValue, $checkboxArray, true);
+				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray);
+				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray, true);
 				$table .= '</td>';
 			}
 
@@ -250,8 +250,8 @@ if ($the_query_terms->have_posts()):
 	function checkboxOnChange(name, data) {
 		this.handleInputOnChange(name, data, window.checkboxArrayJs, window.checkboxArrayJsOriginal, "modified-checkbox")
 		var el = document.getElementById(name);
-		if(data == true)
-		el.value = "on";
+		if (data == true)
+			el.value = "on";
 
 		this.computeAnyChangedData();
 	}

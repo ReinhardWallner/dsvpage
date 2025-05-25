@@ -37,7 +37,7 @@ if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 
 
 $vars = $_POST;
-error_log("POST VALUES " . print_r($vars, true));
+//error_log("POST VALUES " . print_r($vars, true));
 
 if (gettype($vars) == "array") {
 	// Read post data
@@ -67,15 +67,15 @@ if (gettype($vars) == "array") {
 	}
 
 
-	error_log("Title values:" . print_r($title_values, true));
-	error_log("Description values:" . print_r($desc_values, true));
-	error_log("Tag values:" . print_r($tag_values, true));
-	error_log("Custom Field values:" . print_r($customfield_values, true));
-	error_log("Category values:" . print_r($category_values, true));
+	// error_log("Title values:" . print_r($title_values, true));
+	// error_log("Description values:" . print_r($desc_values, true));
+	// error_log("Tag values:" . print_r($tag_values, true));
+	// error_log("Custom Field values:" . print_r($customfield_values, true));
+	// error_log("Category values:" . print_r($category_values, true));
 
 	// Update values
 	$tfiltered = array_filter($title_values, "modifiedValues");
-	error_log("titles filtered " . print_r($tfiltered, true));
+	// error_log("titles filtered " . print_r($tfiltered, true));
 
 	saveTitles($tfiltered);
 

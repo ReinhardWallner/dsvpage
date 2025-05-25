@@ -2,28 +2,17 @@
 
 function modifiedValues($value)
 {
-	// for Categories (Ceckboxes):
-	// if (original == "on") && value NOT Set --> modified
-	// if (original == "on") && value on --> NOT modified
-	// if(original leer und value NOT SET --> NOT modified)
-	// if(original leer und value "on" --> modified)
-
 	return $value["origin"] != $value["value"];
 }
 
 function modifiedValuesCheckbox($value)
 {
-	// for Categories (Ceckboxes):
-	// if (original == "on") && value NOT Set --> modified
-	// if (original == "on") && value on --> NOT modified
-	// if(original leer und value NOT SET --> NOT modified)
-	// if(original leer und value "on" --> modified)
 	if ($value["origin"] == "on") {
-		if ($value && $value["value"] == "on")
+		if ($value && array_key_exists('value', $value) && $value["value"] == "on")
 			return false;
 		return true;
 	} else {
-		if ($value && $value["value"] == "on")
+		if ($value && array_key_exists('value', $value) && $value["value"] == "on")
 			return true;
 
 		return false;
@@ -40,6 +29,7 @@ function modifiedValuesArray($values)
 {
 	$modifiedValues = [];
 	$lastfield = null;
+	$lastArr = [];
 	$modifiedValuesExist = false;
 	foreach ($values as $file_id => $value) {
 		// error_log("modifiedValuesArray FILE ID " . $file_id);
@@ -49,9 +39,9 @@ function modifiedValuesArray($values)
 				$lastfield = $field_value;
 				// error_log("modifiedValuesArray lastArray " . $key . " lf=" . $lastfield . ", " . print_r($lastArr, true));
 			} else {
-				// error_log("modifiedValuesArray " . $key . ", " . print_r($field_value, true));
+				// error_log("modifiedValuesArray ELSE key, fiedlvalue " . $key . ", " . print_r($field_value, true) . ", lastfield=" . $lastfield);
 				$modified = false;
-				if (str_starts_with($$lastfield, "_sf_file_cat"))
+				if (str_starts_with($lastfield, "_sf_file_cat"))
 					$modified = modifiedValuesCheckbox($field_value);
 				else
 					$modified = modifiedValues($field_value);
@@ -77,7 +67,7 @@ function modifiedValuesArray($values)
 		$modifiedValuesExist = false;
 	}
 
-	error_log("modifiedValuesArray RETURN " . print_r($modifiedValues, true));
+	// error_log("modifiedValuesArray RETURN " . print_r($modifiedValues, true));
 	return $modifiedValues;
 }
 
@@ -110,8 +100,12 @@ function addDoubleIdValuesToArray($vars, $key, &$array)
 {
 	$el = $vars[$key];
 	$exp = explode("_", $key);
-	$file_id = $exp[count($exp) - 2];
-	$array[$file_id]["field"] = $key;
+	$ct = count($exp) - 2;
+	$file_id = $exp[$ct];
+	$newKey = "";
+	for ($i = 1; $i < $ct + 1; $i++)
+		$newKey .= "_" . $exp[$i];
+	$array[$file_id]["field"] = $newKey;
 	$cf_id = $exp[count($exp) - 1];
 	if (str_contains($key, 'origin')) {
 		$array[$file_id][$cf_id]["origin"] = $el;
