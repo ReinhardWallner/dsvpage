@@ -51,24 +51,6 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	$obj->value = $value;
 	array_push($checkboxArray, [$name => $obj]);
 
-
-	// $val = "No";
-	// if ($value == true)
-	// 	$val = "Yes";
-
-	// if ($hidden) {
-	// 	if ($value)
-	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked value=' . $value . ' />';
-	// 	else
-	// 		return '<input type="hidden" name="' . $name . '" id="' . $name . ' value=' . $value . ' "/>';
-	// } else {
-	// 	if ($value)
-	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked value=' . $value . ' onchange="checkboxOnChange(this.name, this.value)"/>';
-	// 	else
-	// 		return '<input type="checkbox" name="' . $name . '" id="' . $name . ' value=' . $value . ' onchange="checkboxOnChange(this.name, this.checked)"/>';
-	// }
-
-
 	if ($hidden) {
 		if ($value)
 			return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" />';
@@ -85,25 +67,45 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 ?>
 
 <?php
-//$table = '<form method="post" enctype="multipart/form-data" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
+$posts_per_page = 4;
+$paged = 1;
+
+if (isset($_GET['_page']) && $_GET['_page']) {
+	$paged = (int) $_GET['_page'];
+} elseif (get_query_var('paged')) {
+	$paged = absint(get_query_var('paged'));
+}
+
+$s = get_option('shared_files_settings');
+$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
+
+?>
+
+<!-- pass variables to javascript -->
+<script>
+	var paged = <?php echo json_encode($paged) ?>;
+	var posts_per_page = <?php echo json_encode($posts_per_page) ?>;
+	var custom_fields_cnt = <?php echo json_encode($custom_fields_cnt) ?>;
+</script>
+
+
+<?php
+
+$searchFields = '<div>';
+$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" >';
+$searchFields .= '</div>';
+
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
 $table .= '<table style="margin: 10px;">';
 $table .= "<tr><td>Id</td><td>Titel</td><td>Beschreibung</td>";
 
-$args = array('post_type' => 'shared_file', 'posts_per_page' => 10);
-
-$s = get_option('shared_files_settings');
-$tag_slug = 'post_tag';
-if (isset($s['tag_slug']) && $s['tag_slug']) {
-	$tag_slug = sanitize_title($s['tag_slug']);
-}
-
-$taxonomy_slug = 'shared-file-category';
+$args = array(
+	'post_type' => 'shared_file',
+	'posts_per_page' => $posts_per_page,
+	'paged' => $paged,
+);
 
 // Custom Fields Header
-$s = get_option('shared_files_settings');
-
-$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 for ($n = 1; $n < $custom_fields_cnt; $n++) {
 	if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
 		$table .= "<td>" . $cf_title . "</td>";
@@ -115,6 +117,7 @@ for ($n = 1; $n < $custom_fields_cnt; $n++) {
 $table .= "<td>Tags</td>";
 
 // Categories Header
+$taxonomy_slug = 'shared-file-category';
 $allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
 
 foreach ($allcategories as $category) {
@@ -123,6 +126,11 @@ foreach ($allcategories as $category) {
 $table .= "</tr>";
 
 $the_query_terms = new WP_Query($args);
+
+$tag_slug = 'post_tag';
+if (isset($s['tag_slug']) && $s['tag_slug']) {
+	$tag_slug = sanitize_title($s['tag_slug']);
+}
 
 if ($the_query_terms->have_posts()):
 	while ($the_query_terms->have_posts()):
@@ -136,7 +144,7 @@ if ($the_query_terms->have_posts()):
 
 
 		// Custom fields
-		$s = get_option('shared_files_settings');
+		// $s = get_option('shared_files_settings');
 		$c = get_post_custom($file_id);
 		$desc = $c["_sf_description"][0];
 		if ($desc !== null && trim($desc) !== '') {
@@ -215,16 +223,17 @@ if ($the_query_terms->have_posts()):
 	<?php endwhile;
 
 	$table .= "</table>";
-	$table .= '<input type="submit" name="submit" value="SpeichernInput"></input>';
+	$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
 	$table .= '</form>';
-	echo $table;
 
-	//	error_log(print_r($table, true));
+	$pagination_active = 1;
+	$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $the_query_terms, 'default');
 
-	//echo '<button type="submit" name="saveBtn" onclick="onSaveClick()" disabled>Speichern</button>';
 
-	// print ("<pre>" . print_r($inputArray, true) . "</pre>");
-	// print ("<pre>" . print_r($checkboxArray, true) . "</pre>");
+	// error_log("PAGE: " . print_r($pagination, true));
+	echo $searchFields . $table . $pagination;
+	// $search = ShortcodeSharedFilesSearch::shared_files_search();
+	// echo $search . $table . $pagination;
 
 	wp_reset_postdata();
 ?>
@@ -269,7 +278,7 @@ if ($the_query_terms->have_posts()):
 
 		if (arrayJs) {
 			let foundElement = arrayJs.find(el => { if (el[name] !== undefined) return el; })
-			console.log("foundElement ", foundElement)
+			// console.log("foundElement ", foundElement)
 			arrayJs.find(el => {
 				// console.log("IS TO FIND? ", name, el, el[name]);
 				if (el[name]) return el;
@@ -277,10 +286,10 @@ if ($the_query_terms->have_posts()):
 
 			if (foundElement) {
 				foundElement[name].value = data;
-				console.log("foundElement modified ", foundElement)
+				// console.log("foundElement modified ", foundElement)
 				let foundElementOrig = arrayJsOriginal.find(el => { if (el[name] !== undefined) return el; })
-				console.log("foundElement compare: " + foundElement[name] + " <--> " + foundElementOrig[name])
-				if (foundElementOrig && foundElementOrig[name] != foundElement[name]) {
+				console.log("foundElement compare: ", foundElement, foundElementOrig)
+				if (foundElementOrig && foundElementOrig[name].value != foundElement[name].value) {
 					console.log("DIFFERENT");
 					this.markInputObject(name, false, modifiedClassName)
 				} else {
@@ -329,31 +338,88 @@ if ($the_query_terms->have_posts()):
 			}
 		}
 
-		let saveBtn = document.getElementsByName("saveBtn");
+		let saveBtn = document.getElementsByName("submit");
 		if (saveBtn.length > 0) {
 			saveBtn[0].disabled = changesExists == false;
 		}
 
-		console.log("MODIFIED DATA", changedData);
+		var pageNumbers = document.getElementsByClassName("page-numbers");
+		if (pageNumbers) {
+			for (let element of pageNumbers) {
+				console.log(element);
+				if (changesExists == true) {
+					element.classList.add('disabled');
+				}
+				else {
+					element.classList.remove('disabled');
+				}
+			}
+		}
+
+
+		console.log("MODIFIED DATA changesExists, changedData, page_numbers", changesExists, changedData, pageNumbers);
 	}
 
 	function markInputObject(name, equals, modifiedClassName) {
 		let inputObject = document.getElementsByName(name);
 
-		console.log('INPUT:', inputObject, inputObject[0].style, inputObject[0].class)
+		console.log('INPUT: equals, inputObject, style, class', equals, inputObject, inputObject[0].style, inputObject[0].class)
 		if (inputObject && inputObject.length > 0) {
 			if (equals)
-				inputObject[0].className = null;
+				// inputObject[0].className = null;
+				inputObject[0].classList.remove(modifiedClassName);
 			else
-				inputObject[0].className = modifiedClassName;
+				// inputObject[0].className = modifiedClassName;
+				inputObject[0].classList.add(modifiedClassName);
 		}
 	}
 
-	async function onSaveClick() {
-		var el = document.getElementById("_sf_file_title_40");
-		console.log("SAveClick el", el)
-		await this.submitData();
+	function getInputValue(fieldName) {
+		var fields = document.getElementsByName(fieldName);
+		if (fields && fields.length == 1) {
+			return fields[0].value;
+		}
+
+		return null;
 	}
+
+	function onInputSearchText() {
+		console.log("onInputSearchText PAGED VARIABLE??? ", paged, posts_per_page, custom_fields_cnt);
+		var searchText = getInputValue("searchField");
+		if (searchText) {
+			var cfCount = getInputValue("custom_fields_cnt");
+			if (!cfCount)
+				cfCount = 20;
+
+			let data = {
+				action: "sf_extensions_get_files",
+				custom_fields_cnt: cfCount,
+				searchField: searchText,
+				paged: 1, // on SEARCH Change always page 1!!!
+				posts_per_page: posts_per_page
+
+			};
+			let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/admin-ajax.php";
+			// let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/post_getFiles_wallner.php"
+			// ajaxurl = esc_url_raw( admin_url('admin-ajax.php') )
+			jQuery.post(ajaxurl, data, (function (a) {
+				console.log("AJAX RESPONSE PARSED ", JSON.parse(a));
+				// var i = a.replace(/0$/, "");
+				// e("." + s + " .shared-files-search-files").val(""),
+				// e("." + s + " .shared-files-nothing-found").hide(),
+				// e("." + s + " .shared-files-files-found").hide(),
+				// e("." + s + " .shared-files-non-ajax").hide(),
+				// e("." + s + " .shared-files-pagination").hide(),
+				// e("." + s + " .shared-files-pagination-improved").hide(),
+				// e("." + s + " .shared-files-ajax-list").empty().append(i);
+				// var l = "./?" + e("." + s + " .shared-files-ajax-form select").serialize();
+				// window.history.pushState({
+				//     urlPath: l
+				// }, "", l)
+			}))
+		}
+	}
+
 
 	async function submitData() {
 		console.log("submitData start");
@@ -444,6 +510,15 @@ if ($the_query_terms->have_posts()):
 
 	input[type=checkbox] .modified-checkbox {
 		accent-color: yellow;
+	}
+
+	a.disabled {
+		pointer-events: none;
+		cursor: default;
+	}
+
+	input:disabled {
+		background-color: #938a8d;
 	}
 </style>
 

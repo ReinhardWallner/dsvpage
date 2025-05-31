@@ -1,14 +1,15 @@
 <?php
 /**
- * Edit post administration panel.
+ * TODO.
  *
- * Manage Post actions: post, edit, delete, etc.
+ * TODO Manage Post actions: post, edit, delete, etc.
  *
- * @package WordPress
- * @subpackage Administration
+ * @package WALLNER
+ * @subpackage SharedFileExtension
  */
 
 /** WordPress Administration Bootstrap */
+// TODO: Ist diese Zeile NÖTIG???
 require_once __DIR__ . '/admin.php';
 
 include "post_wallner_helper_functions.php";
@@ -93,24 +94,29 @@ if (gettype($vars) == "array") {
 }
 
 /*TODOs:
-0. Checkbox-Values werden nicht genau so übergeben, CHECKED STATUS???
-0. Description anzeigen und speichern
 0. Umlaute, Sonderzeichen in allen Feldern prüfen
 
-1. Speichern einer einfachen Variable
 2. Finden der geänderten Werte: 
 	a) einfach über die hidden inputs, VT: BE-gesteuert, NT: doppelt so viele Formulardaten
 	b) hidden input variable mit Liste der geänderten Daten: VT: Weniger Formularfelder und damit Daten, NT: FE-Lösung ist fehleranfälliger, falls JS fehlerhaft
 	c) optimal wäre es, die Formulardaten per ajax zu schicken (jquery)
-3. Speichern aller Werte
-* Welche Spalten fehlen noch: Description
-	* Info, dass Speichern erfolgreich war
-4. Paging
+
+4. Paging + Sperren des pagings, wenn Änderungen
 5. Verwerfen Button (reload)
 6. Suche nach Text und Kategorien-Filterung
+
+BUGS:
+* Tags Umlaute werden nicht angezeigt
+* Admin Code verschieben in WPAdminSubfolder
+* Pfade relativ am Server setzen
+
 6. Tests
 7. Doku, welche Files alles erstellt und angepasst werden müssen
 8. Integration
+
+PAGES angezeigt, pagination inaktiv ok
+
+shared-files-ajax-form
 */
 
 wp_redirect($sendback_test);
