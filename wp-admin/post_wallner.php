@@ -105,6 +105,9 @@ if (gettype($vars) == "array") {
 5. Verwerfen Button (reload)
 6. Suche nach Text und Kategorien-Filterung
 
+* REFACTORINGs: 
+	* JS auslagern
+
 BUGS:
 * Tags Umlaute werden nicht angezeigt
 * Admin Code verschieben in WPAdminSubfolder

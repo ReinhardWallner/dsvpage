@@ -64,6 +64,46 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	}
 
 }
+
+function addTitleField(&$table, $file_id, $title, &$inputArray)
+{
+	$table .= '<td>';
+	$table .= getInputField($file_id, null, '_sf_file_title_' . $file_id, $title, $inputArray);
+	$table .= getInputField($file_id, null, '_sf_file_title_origin_' . $file_id, $title, $inputArray, true);
+	$table .= '</td>';
+}
+function addDescriptionField(&$table, $file_id, $desc, &$inputArray)
+{
+	$table .= '<td>';
+	$table .= getInputField($file_id, null, '_sf_file_description_' . $file_id, $desc, $inputArray);
+	$table .= getInputField($file_id, null, '_sf_file_description_origin_' . $file_id, $desc, $inputArray, true);
+	$table .= '</td>';
+}
+
+function addCustomFieldField(&$table, $file_id, $n, $val, &$inputArray): void
+{
+	$table .= '<td>';
+	$table .= getInputField($file_id, $n, '_sf_file_cf_' . $file_id . '_' . $n, $val, $inputArray);
+	$table .= getInputField($file_id, $n, '_sf_file_cf_origin_' . $file_id . '_' . $n, $val, $inputArray, true);
+	$table .= '</td>';
+}
+
+function addTagsField(&$table, $file_id, $tagValue, &$inputArray): void
+{
+	$table .= '<td>';
+	$table .= getInputField($file_id, null, '_sf_file_tags_' . $file_id, $tagValue, $inputArray);
+	$table .= getInputField($file_id, null, '_sf_file_tags_origin_' . $file_id, $tagValue, $inputArray, true);
+	$table .= '</td>';
+}
+
+function addCategoryField(&$table, $file_id, &$category, $catValue, &$checkboxArray): void
+{
+	error_log("addCategoryField " . $file_id . ": " . print_r($category, true) . ", catvalue " . $catValue . ", inputArr " . print_r($inputArray, true));
+	$table .= '<td>';
+	$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray);
+	$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray, true);
+	$table .= '</td>';
+}
 ?>
 
 <?php
@@ -96,7 +136,7 @@ $searchFields .= '<input type="text" shared-files-search-files-v2" name="searchF
 $searchFields .= '</div>';
 
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
-$table .= '<table style="margin: 10px;">';
+$table .= '<table name="dataTable" style="margin: 10px;">';
 $table .= "<tr><td>Id</td><td>Titel</td><td>Beschreibung</td>";
 
 $args = array(
@@ -137,14 +177,11 @@ if ($the_query_terms->have_posts()):
 		$the_query_terms->the_post();
 		$file_id = intval(get_the_id());
 		$table .= "<tr><td>" . $file_id . "</td>";
-		$table .= '<td>';
-		$table .= getInputField($file_id, null, '_sf_file_title_' . $file_id, get_the_title(), $inputArray);
-		$table .= getInputField($file_id, null, '_sf_file_title_origin_' . $file_id, get_the_title(), $inputArray, true);
-		$table .= '</td>';
+		$title = get_the_title();
+		addTitleField($table, $file_id, $title, $inputArray);
 
 
 		// Custom fields
-		// $s = get_option('shared_files_settings');
 		$c = get_post_custom($file_id);
 		$desc = $c["_sf_description"][0];
 		if ($desc !== null && trim($desc) !== '') {
@@ -152,10 +189,7 @@ if ($the_query_terms->have_posts()):
 			$desc = str_replace('</p>', '', $desc);
 		}
 
-		$table .= '<td>';
-		$table .= getInputField($file_id, null, '_sf_file_description_' . $file_id, $desc, $inputArray);
-		$table .= getInputField($file_id, null, '_sf_file_description_origin_' . $file_id, $desc, $inputArray, true);
-		$table .= '</td>';
+		addDescriptionField($table, $file_id, $desc, $inputArray);
 
 		$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 		for ($n = 1; $n < $custom_fields_cnt; $n++) {
@@ -165,10 +199,7 @@ if ($the_query_terms->have_posts()):
 					$val = sanitize_text_field($c['_sf_file_upload_cf_' . $n][0]);
 				}
 			}
-			$table .= '<td>';
-			$table .= getInputField($file_id, $n, '_sf_file_cf_' . $file_id . '_' . $n, $val, $inputArray);
-			$table .= getInputField($file_id, $n, '_sf_file_cf_origin_' . $file_id . '_' . $n, $val, $inputArray, true);
-			$table .= '</td>';
+			addCustomFieldField($table, $file_id, $n, $val, $inputArray);
 		}
 
 		// Tags
@@ -183,10 +214,7 @@ if ($the_query_terms->have_posts()):
 			$tagValue = substr($tagValue, 0, strlen($tagValue) - 2);
 		}
 
-		$table .= '<td>';
-		$table .= getInputField($file_id, null, '_sf_file_tags_' . $file_id, $tagValue, $inputArray);
-		$table .= getInputField($file_id, null, '_sf_file_tags_origin_' . $file_id, $tagValue, $inputArray, true);
-		$table .= '</td>';
+		addTagsField($table, $file_id, $tagValue, $inputArray);
 
 		// Categories
 		if (is_array($allcategories)) {
@@ -209,10 +237,7 @@ if ($the_query_terms->have_posts()):
 					$catValue = "on";
 				}
 
-				$table .= '<td>';
-				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray);
-				$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray, true);
-				$table .= '</td>';
+				addCategoryField($table, $file_id, $category, $catValue, $checkboxArray);
 			}
 
 		}
@@ -232,8 +257,6 @@ if ($the_query_terms->have_posts()):
 
 	// error_log("PAGE: " . print_r($pagination, true));
 	echo $searchFields . $table . $pagination;
-	// $search = ShortcodeSharedFilesSearch::shared_files_search();
-	// echo $search . $table . $pagination;
 
 	wp_reset_postdata();
 ?>
@@ -343,6 +366,11 @@ if ($the_query_terms->have_posts()):
 			saveBtn[0].disabled = changesExists == false;
 		}
 
+		let searchField = document.getElementsByName("searchField");
+		if (searchField.length > 0) {
+			searchField[0].disabled = changesExists == true;
+		}
+
 		var pageNumbers = document.getElementsByClassName("page-numbers");
 		if (pageNumbers) {
 			for (let element of pageNumbers) {
@@ -403,98 +431,117 @@ if ($the_query_terms->have_posts()):
 			// let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/post_getFiles_wallner.php"
 			// ajaxurl = esc_url_raw( admin_url('admin-ajax.php') )
 			jQuery.post(ajaxurl, data, (function (a) {
-				console.log("AJAX RESPONSE PARSED ", JSON.parse(a));
-				// var i = a.replace(/0$/, "");
-				// e("." + s + " .shared-files-search-files").val(""),
-				// e("." + s + " .shared-files-nothing-found").hide(),
-				// e("." + s + " .shared-files-files-found").hide(),
-				// e("." + s + " .shared-files-non-ajax").hide(),
-				// e("." + s + " .shared-files-pagination").hide(),
-				// e("." + s + " .shared-files-pagination-improved").hide(),
-				// e("." + s + " .shared-files-ajax-list").empty().append(i);
-				// var l = "./?" + e("." + s + " .shared-files-ajax-form select").serialize();
-				// window.history.pushState({
-				//     urlPath: l
-				// }, "", l)
+				let result = JSON.parse(a);
+				replaceGridData(JSON.parse(a));
 			}))
 		}
 	}
 
+	function replaceGridData(data) {
+		//TODO:
+		// Remove table rows
+		// insert new table rows
+		// refresh paging info buttons
 
-	async function submitData() {
-		console.log("submitData start");
-		const formData = new FormData();
-		formData.append("username", "reini");
-		/*
-		 try {
-			  let response = await fetch(
-					"http://localhost:8081/dsvpage/wp-admin/admin-ajax.php",
-					{
-						method: "POST",
+		var tableEl = document.getElementsByName("dataTable");
+		console.log("replaceGridData data, tableEl, inputArrayJs", data, tableEl, inputArrayJs);
+		// remove current child elements
+		if (tableEl && tableEl.length > 0) {
+			// $inputArray = array();
+			// $checkboxArray = array();
+			inputArrayJs = [];
 
-						body: formData,
-					}
-			  );
-			  console.log("submitData response", response);
-			   if (response && response.status == 200) {
+			let table = tableEl[0];
+			clearTableContents(table);
+			fillTableContents(table, data);
+		}
+	}
 
-			   }
-
-			  // return response.json();
-		 } catch (err) {
-			  console.error("submitData err", err);
-			  return;
-		 }
-			*/
-
-		// wp_enqueue_script('jquery');
-		console.log("submitData before jquery");
-		try {
-			/*
-			// jQuery('input[type=submit]').click(function (e) {
-			console.log("submitData before jquery");
-			// e.preventDefault();
-			console.log("submitData before jquery");
-			jQuery.post("http://localhost:8081/dsvpage/wp-admin/wp-admin/admin-ajax.php"({
-				type: "POST",
-				url: "http://localhost:8081/dsvpage/wp-admin/wp-admin/admin-ajax.php",
-				//data: "action=newbid&id=" + <?php echo $post->ID ?>,
-			data: formData,
-				success: function (msg) {
-					console.log("SUCCESS", msg)
-				},
-			error: function () {
-				console.log("ERROR")
-			},
-		});
-			*/
-
-		console.log("submitData before jquery formData", formData);
-		// var data = new URLSearchParams(Array.from(new FormData(formData))).toString();
-		var data = JSON.stringify(formData);
-		console.log("submitData before jquery data", data);
-		jQuery.ajax({
-			url: 'http://localhost:8081/dsvpage/wp-admin/wp-admin/admin-ajax.php',
-			type: "post",
-			data: { "username": "reini" },
-			dataType: "json",
-			success: function (response) {
-				if (response.result) {
-
-				}
-				else {
-
+	function clearTableContents(table) {
+		let children = table.children;
+		if (children && children.length == 1) {
+			if (children[0] && children[0].children && children[0].children.length > 1) {
+				let length = children[0].children.length
+				for (let i = length - 1; i > 0; i--) {
+					table.deleteRow(i);
 				}
 			}
+		}
+	}
+
+	function fillTableContents(table, data) {
+		console.log("fillTableContents data", data, table);
+		// 		_sf_file_title_			_fid
+		// _sf_file_description_	_fid
+		// _sf_file_cf_			_fid_cfid
+		// _sf_file_tags_			_fid
+		// _sf_file_cat_			_fid_catid
+
+		// file_id: 40
+		// title: "advent ZZZ 122"	
+		// description: "Beschreibung ZZZ 1 2d"
+		// cf_1: "kompo ZZZ 1"
+		// cf_2: "art ZZZ 1"
+		// tags: "abcde, asdf, LLLLLL, ÖÖÖÖÖÖ, ZZZ"
+		// cat_term_id_3: true
+		// cat_term_id_4: false
+
+		data.forEach(element => {
+			console.log("fillTableContents data row", element);
+			var tr = document.createElement('tr');
+			var tdFileId = document.createElement('td');
+			var fileId = document.createTextNode(element.file_id);
+			tdFileId.appendChild(fileId);
+			tr.appendChild(tdFileId);
+
+			insertTitleField(element.file_id, element.title, tr, inputArrayJs);
+
+			table.appendChild(tr);
 		});
 
-		console.log("submitData after jquery");
 
-		// });
+		console.log("fillTableContents end ", table);
+
 	}
-		catch (e) {
-		console.log("submitData EXCEPTION", e);
+
+	function insertInputField(file_id, cf_id, name, value, container, inputArray, hidden = false) {
+		// $obj = new stdClass();
+		// $obj -> file_id = $file_id;
+		// if ($cf_id != null)
+		// 	$obj -> cf_id = $cf_id;
+		// $obj -> value = $value;
+		// array_push($inputArray, [$name => $obj]);
+		// inputArray.push();
+
+
+		var input = document.createElement("input");
+
+		let type = "text";
+		if (hidden) {
+			type = "hidden";
+		}
+
+		if (value) {
+			input.value = value;
+			input.title = value;
+		}
+
+		if (!hidden && value) {
+			input.onchange = "inputOnChange(this.name, this.value)"
+		}
+
+		input.type = type;
+		input.name = name;
+		input.id = name;
+		container.appendChild(input); // put it into the DOM
 	}
+
+	function insertTitleField(file_id, title, tr, inputArrayJs) {
+		var td = document.createElement('td');
+		insertInputField(file_id, null, '_sf_file_title_' + file_id, title, td, inputArrayJs, false);
+		insertInputField(file_id, null, '_sf_file_title_origin_' + file_id, title, td, inputArrayJs, true);
+
+		tr.appendChild(td);
 	}
 
 </script>
