@@ -43,6 +43,7 @@ function getInputField($file_id, $cf_id, $name, $value, &$inputArray, $hidden = 
 			return '<input type="text" name="' . $name . '" id="' . $name . '" onchange="inputOnChange(this.name, this.value.value)" />';
 	}
 }
+
 function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $hidden = false)
 {
 	$obj = new stdClass();
@@ -72,6 +73,7 @@ function addTitleField(&$table, $file_id, $title, &$inputArray)
 	$table .= getInputField($file_id, null, '_sf_file_title_origin_' . $file_id, $title, $inputArray, true);
 	$table .= '</td>';
 }
+
 function addDescriptionField(&$table, $file_id, $desc, &$inputArray)
 {
 	$table .= '<td>';
@@ -98,17 +100,21 @@ function addTagsField(&$table, $file_id, $tagValue, &$inputArray): void
 
 function addCategoryField(&$table, $file_id, &$category, $catValue, &$checkboxArray): void
 {
-	error_log("addCategoryField " . $file_id . ": " . print_r($category, true) . ", catvalue " . $catValue . ", inputArr " . print_r($inputArray, true));
+	// error_log("addCategoryField " . $file_id . ": " . print_r($category, true) . ", catvalue " . $catValue . ", inputArr " . print_r($inputArray, true));
 	$table .= '<td>';
 	$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray);
 	$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray, true);
 	$table .= '</td>';
 }
+
 ?>
 
 <?php
-$posts_per_page = 4;
+$posts_per_page = 3;
 $paged = 1;
+
+error_log("TEMPLATE START _POST " . print_r($_POST, true));
+error_log("TEMPLATE START _GET " . print_r($_GET, true));
 
 if (isset($_GET['_page']) && $_GET['_page']) {
 	$paged = (int) $_GET['_page'];
@@ -119,6 +125,17 @@ if (isset($_GET['_page']) && $_GET['_page']) {
 $s = get_option('shared_files_settings');
 $custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 
+$taxonomy_slug = 'shared-file-category';
+$allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
+
+$search = null;
+if (isset($_POST['searchField'])) {
+	$search = $_POST["searchField"];
+} else if (isset($_GET['searchField'])) {
+	$search = $_GET["searchField"];
+}
+
+error_log("TEMPLATE search " . print_r($search, true));
 ?>
 
 <!-- pass variables to javascript -->
@@ -126,144 +143,264 @@ $custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 	var paged = <?php echo json_encode($paged) ?>;
 	var posts_per_page = <?php echo json_encode($posts_per_page) ?>;
 	var custom_fields_cnt = <?php echo json_encode($custom_fields_cnt) ?>;
+	var allCategories = <?php echo json_encode($allcategories) ?>;
+	var insertSearchText = <?php echo json_encode($search) ?>;
 </script>
 
 
 <?php
+$searchFields = '<form
+   id="the-redirect-form" 
+   method="post" 
+   action="http://localhost:8081/dsvpage/test-sharedfiles-edit" 
+   enctype="multipart/form-data">';
 
-$searchFields = '<div>';
-$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" >';
+$searchFields .= '<div>';
+if ($search) {
+	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus  placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()" >';
+} else {
+	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus  placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" >';
+}
 $searchFields .= '</div>';
+$searchFields .= '<input type="hidden" name="custom" value="Something custom">
+</form>';
 
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
 $table .= '<table name="dataTable" style="margin: 10px;">';
 $table .= "<tr><td>Id</td><td>Titel</td><td>Beschreibung</td>";
 
-$args = array(
-	'post_type' => 'shared_file',
-	'posts_per_page' => $posts_per_page,
-	'paged' => $paged,
-);
-
-// Custom Fields Header
-for ($n = 1; $n < $custom_fields_cnt; $n++) {
-	if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
-		$table .= "<td>" . $cf_title . "</td>";
-	}
-
-}
-
-// Tags Header
-$table .= "<td>Tags</td>";
-
-// Categories Header
-$taxonomy_slug = 'shared-file-category';
-$allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
-
-foreach ($allcategories as $category) {
-	$table .= '<td>' . sanitize_title($category->slug) . '</td>';
-}
-$table .= "</tr>";
-
-$the_query_terms = new WP_Query($args);
 
 $tag_slug = 'post_tag';
 if (isset($s['tag_slug']) && $s['tag_slug']) {
 	$tag_slug = sanitize_title($s['tag_slug']);
 }
 
-if ($the_query_terms->have_posts()):
-	while ($the_query_terms->have_posts()):
-		$the_query_terms->the_post();
-		$file_id = intval(get_the_id());
-		$table .= "<tr><td>" . $file_id . "</td>";
-		$title = get_the_title();
-		addTitleField($table, $file_id, $title, $inputArray);
+$args = null;
 
+$select = "SELECT distinct p.id, p.post_title
+FROM `wp_posts` p
+left join `wp_postmeta` m on p.id=m.post_id and (m.meta_key like '%_sf_file_upload_cf%' or m.meta_key like '%_sf_description%')
+left join `wp_term_relationships` trel on trel.object_id=p.id
+left join `wp_terms` t on trel.term_taxonomy_id=t.term_id
+left join `wp_term_taxonomy` tax on tax.term_id=t.term_id and (tax.taxonomy='shared-file-tag' or tax.taxonomy='shared-file-category')
+where post_type='shared_file'";
+$filter = "";
 
-		// Custom fields
-		$c = get_post_custom($file_id);
-		$desc = $c["_sf_description"][0];
-		if ($desc !== null && trim($desc) !== '') {
-			$desc = str_replace('<p>', '', $desc);
-			$desc = str_replace('</p>', '', $desc);
+if ($search) {
+	$filter = "and 
+	(p.post_title like '%{$search}%' 
+	or t.name like '%{$search}%'
+	or (m.meta_key='_sf_description' and m.meta_value like '%{$search}%')
+	or (m.meta_key like '_sf_file_upload_cf%' and m.meta_value like '%{$search}%')
+	)";
+}
+
+$limit = $posts_per_page;
+$offset = ($paged - 1) * $posts_per_page;
+//  if($paged > 1)
+$pageparams = "order by p.post_title
+limit {$limit} offset {$offset}";
+
+$queryCount = "Select count(*) as total from (" . $select . "\n" . $filter . ") qu";
+$query = $select . "\n" . $filter . "\n" . $pageparams;
+
+// error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
+$queryCountResult = $wpdb->get_results($queryCount);
+$total = array_column($queryCountResult, 'total')[0];
+// error_log("editmeta queryCountResult: " . print_r($queryCountResult, true));
+error_log("editmeta queryCountResult 2: " . print_r($total, true));
+
+// error_log("editmeta SELECT STATEMENT: " . print_r($query, true));
+$queryResult = $wpdb->get_results($query);
+// error_log("editmeta queryResult: " . print_r($queryResult, true));
+$ids = array_column($queryResult, 'id');
+// error_log("editmeta queryResult: " . print_r($ids, true));
+
+$fileIds = [];
+
+$pagination = "";
+
+if ($total > 0) {
+	$args = array(
+		'post_type' => 'shared_file',
+		'post__in' => $ids
+	);
+
+	// Custom Fields Header
+	for ($n = 1; $n < $custom_fields_cnt; $n++) {
+		if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
+			$table .= "<td>" . $cf_title . "</td>";
 		}
 
-		addDescriptionField($table, $file_id, $desc, $inputArray);
+	}
 
-		$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
-		for ($n = 1; $n < $custom_fields_cnt; $n++) {
-			$val = "";
-			if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
-				if (isset($c['_sf_file_upload_cf_' . $n]) && $c['_sf_file_upload_cf_' . $n]) {
-					$val = sanitize_text_field($c['_sf_file_upload_cf_' . $n][0]);
-				}
+	// Tags Header
+	$table .= "<td>Tags</td>";
+
+	// Categories Header
+	foreach ($allcategories as $category) {
+		$table .= '<td>' . sanitize_title($category->slug) . '</td>';
+	}
+	$table .= "</tr>";
+	error_log("editmeta args for the query" . print_r($args, true));
+	$the_query_terms = new WP_Query($args);
+
+	if ($the_query_terms->have_posts()):
+		while ($the_query_terms->have_posts()):
+			$the_query_terms->the_post();
+			$file_id = intval(get_the_id());
+
+			$table .= "<tr><td>" . $file_id . "</td>";
+			$title = get_the_title();
+			addTitleField($table, $file_id, $title, $inputArray);
+
+			error_log("FILE ID " . print_r($file_id, true));
+			// Custom fields
+			$c = get_post_custom($file_id);
+			$desc = $c["_sf_description"][0];
+			if ($desc !== null && trim($desc) !== '') {
+				$desc = str_replace('<p>', '', $desc);
+				$desc = str_replace('</p>', '', $desc);
 			}
-			addCustomFieldField($table, $file_id, $n, $val, $inputArray);
-		}
 
-		// Tags
-		$tags = get_the_terms($file_id, $tag_slug);
-		$tagValue = "";
-		if ($tags) {
-			foreach ($tags as $tag) {
-				$tagValue .= sanitize_text_field($tag->name) . ', ';
-			}
-		}
-		if (strlen($tagValue) > 0) {
-			$tagValue = substr($tagValue, 0, strlen($tagValue) - 2);
-		}
+			addDescriptionField($table, $file_id, $desc, $inputArray);
 
-		addTagsField($table, $file_id, $tagValue, $inputArray);
-
-		// Categories
-		if (is_array($allcategories)) {
-			$categories = get_the_terms($file_id, 'shared-file-category');
-
-			foreach ($allcategories as $category) {
-				$catName = sanitize_title($category->name);
-				$exists = false;
-				if (is_array($categories)) {
-					foreach ($categories as $myCategory) {
-						$catName = sanitize_title($myCategory->name);
-						if ($myCategory->name == $category->name) {
-							$exists = true;
-							break;
-						}
+			$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
+			for ($n = 1; $n < $custom_fields_cnt; $n++) {
+				$val = "";
+				if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
+					if (isset($c['_sf_file_upload_cf_' . $n]) && $c['_sf_file_upload_cf_' . $n]) {
+						$val = sanitize_text_field($c['_sf_file_upload_cf_' . $n][0]);
 					}
 				}
-				$catValue = "";
-				if ($exists) {
-					$catValue = "on";
-				}
-
-				addCategoryField($table, $file_id, $category, $catValue, $checkboxArray);
+				addCustomFieldField($table, $file_id, $n, $val, $inputArray);
 			}
 
-		}
+			// Tags
+			$tags = get_the_terms($file_id, $tag_slug);
+			$tagValue = "";
+			if ($tags) {
+				foreach ($tags as $tag) {
+					$tagValue .= sanitize_text_field($tag->name) . ', ';
+				}
+			}
+			if (strlen($tagValue) > 0) {
+				$tagValue = substr($tagValue, 0, strlen($tagValue) - 2);
+			}
 
-		$table .= "</tr>";
+			addTagsField($table, $file_id, $tagValue, $inputArray);
 
-	?>
-	<?php endwhile;
+			// Categories
+			if (is_array($allcategories)) {
+				$categories = get_the_terms($file_id, 'shared-file-category');
 
-	$table .= "</table>";
-	$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
-	$table .= '</form>';
+				foreach ($allcategories as $category) {
+					$catName = sanitize_title($category->name);
+					$exists = false;
+					if (is_array($categories)) {
+						foreach ($categories as $myCategory) {
+							$catName = sanitize_title($myCategory->name);
+							if ($myCategory->name == $category->name) {
+								$exists = true;
+								break;
+							}
+						}
+					}
+					$catValue = "";
+					if ($exists) {
+						$catValue = "on";
+					}
 
-	$pagination_active = 1;
-	$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $the_query_terms, 'default');
+					addCategoryField($table, $file_id, $category, $catValue, $checkboxArray);
+				}
 
+			}
 
-	// error_log("PAGE: " . print_r($pagination, true));
-	echo $searchFields . $table . $pagination;
+			$table .= "</tr>";
 
-	wp_reset_postdata();
+		?>
+		<?php endwhile;
+
+		$table .= "</table>";
+		$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
+		$table .= '</form>';
+
+		$pagination_active = 1;
+		$maxpagesFloat = $total / $posts_per_page;
+		$maxpages = intval($total / $posts_per_page);
+		if ($maxpagesFloat > $maxpages)
+			$maxpages++;
+		error_log("editmeta maxpages " . print_r($maxpages, true));
+		$paginationArgs = array(
+			'post_type' => 'shared_file',
+			'posts_per_page' => $posts_per_page,
+			'paged' => $paged,
+			// 's' => $search,
+			'orderby' => 'name'
+		);
+
+		$_GET['_page'] = $paged;
+		$paginationQuery = new WP_Query($args);
+		$paginationQuery->max_num_pages = $maxpages;
+		$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $paginationQuery, 'default');
+
+		$searchtest = "abc";
+		if ($search):
+			$pagination = preg_replace('/(href=\")(.+)(\")/', '${1}${2}&searchField=' . $searchtest . '${3}', $pagination);
+		endif;
+		error_log("editmeta pagination " . print_r($pagination, true));
+
+	else:
+		$table .= "<p>Keine Daten gefunden</p>";
+	endif;
+} else {
+	$table .= "<p>Keine Daten gefunden</p>";
+}
 ?>
-<?php endif; ?>
+
+
+<?php
+// error_log("searchFields: " . print_r($searchFields, true));
+// error_log("table: " . print_r($table, true));
+// error_log("pagination: " . print_r($pagination, true));
+echo $searchFields . $table . $pagination;
+
+wp_reset_postdata();
+?>
 <!-- Table section end -->
 
+<?php
+/* Wordpress doesn't give you access to the <body> tag to add a call
+ * to init_trailmap(). This is a workaround to dynamically add that tag.
+ */
+function add_onload()
+{
+	?>
+
+	<script type="text/javascript">
+		document.getElementsByTagName('body')[0].onload = onloadInternally;
+	</script>
+
+	<?php
+}
+
+add_action('wp_footer', 'add_onload');
+?>
+
 <script>
+	function onloadInternally() {
+		let searchfield = document.getElementsByName("searchField");
+		console.log("onloadInternally", searchfield, searchfield[0], insertSearchText)
+		if (searchfield && searchfield[0] && insertSearchText) {
+			console.log("onloadInternally", searchfield, searchfield[0], searchfield[0].value)
+			searchfield[0].value = insertSearchText;
+			if (insertSearchText.length > 0) {
+				let caret = insertSearchText.length;
+				searchfield[0].setSelectionRange(caret, caret);
+			}
+		}
+	}
+
 	var inputArrayJsOriginal = <?php echo json_encode($inputArray); ?>;
 	var checkboxArrayJsOriginal = <?php echo json_encode($checkboxArray); ?>;
 
@@ -272,8 +409,8 @@ if ($the_query_terms->have_posts()):
 
 	var changedData;
 
-	console.log("InputJS" + JSON.stringify(inputArrayJs));
-	console.log("InputJS", inputArrayJs);
+	// console.log("InputJS" + JSON.stringify(inputArrayJs));
+	// console.log("InputJS", inputArrayJs);
 
 	function inputOnChange(name, data) {
 		this.handleInputOnChange(name, data, window.inputArrayJs, window.inputArrayJsOriginal, "modified-input");
@@ -411,29 +548,44 @@ if ($the_query_terms->have_posts()):
 		return null;
 	}
 
-	function onInputSearchText() {
-		console.log("onInputSearchText PAGED VARIABLE??? ", paged, posts_per_page, custom_fields_cnt);
+	function onInputSearchText(newPaged) {
+		let pagedToSend = 1;
+		if (newPaged) {
+			paged = newPaged;
+			pagedToSend = newPaged;
+			console.log("onInputSearchText new Page", newPaged)
+		}
+
 		var searchText = getInputValue("searchField");
-		if (searchText) {
+		console.log("onInputSearchText PAGED VARIABLE??? searchText, paged, posts_per_page, pagedToSend, custom_fields_cnt ", searchText, paged, posts_per_page, pagedToSend, custom_fields_cnt);
+
+		if (searchText != null && searchText != undefined) {
 			var cfCount = getInputValue("custom_fields_cnt");
 			if (!cfCount)
 				cfCount = 20;
 
+			// console.log("onInputSearchText  before sent ajax cfCount", cfCount);
 			let data = {
 				action: "sf_extensions_get_files",
 				custom_fields_cnt: cfCount,
 				searchField: searchText,
-				paged: 1, // on SEARCH Change always page 1!!!
+				paged: pagedToSend, // on SEARCH Change always page 1!!!
+				// _page: pagedToSend, // on SEARCH Change always page 1!!!
 				posts_per_page: posts_per_page
 
 			};
-			let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/admin-ajax.php";
+			//  let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/admin-ajax.php";
+			let ajaxurl = "http://localhost:8081/dsvpage/test-sharedfiles-edit";
+
+			// window.location.href = ajaxurl;
+			document.getElementById("the-redirect-form").submit();
+
 			// let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/post_getFiles_wallner.php"
 			// ajaxurl = esc_url_raw( admin_url('admin-ajax.php') )
-			jQuery.post(ajaxurl, data, (function (a) {
-				let result = JSON.parse(a);
-				replaceGridData(JSON.parse(a));
-			}))
+			// jQuery.post(ajaxurl, data, (function (a) {
+			// 	let result = JSON.parse(a);
+			// 	replaceGridData(JSON.parse(a));
+			// }))
 		}
 	}
 
@@ -449,22 +601,24 @@ if ($the_query_terms->have_posts()):
 		if (tableEl && tableEl.length > 0) {
 			// $inputArray = array();
 			// $checkboxArray = array();
-			inputArrayJs = [];
+			// inputArrayJs = [];
 
 			let table = tableEl[0];
 			clearTableContents(table);
-			fillTableContents(table, data);
+			fillTableContents(table, data.data);
+			replacePagination(data.pagination);
 		}
 	}
 
 	function clearTableContents(table) {
 		let children = table.children;
-		if (children && children.length == 1) {
-			if (children[0] && children[0].children && children[0].children.length > 1) {
-				let length = children[0].children.length
-				for (let i = length - 1; i > 0; i--) {
-					table.deleteRow(i);
-				}
+		if (children) {
+			let length = children.length
+			if (children.length == 1 && children[0] && children[0].children && children[0].children.length > 1) {
+				length = children[0].children.length;
+			}
+			for (let i = length - 1; i > 1; i--) {
+				table.deleteRow(i);
 			}
 		}
 	}
@@ -487,7 +641,7 @@ if ($the_query_terms->have_posts()):
 		// cat_term_id_4: false
 
 		data.forEach(element => {
-			console.log("fillTableContents data row", element);
+			// console.log("fillTableContents data row element, custom_fields_cnt", element, custom_fields_cnt);
 			var tr = document.createElement('tr');
 			var tdFileId = document.createElement('td');
 			var fileId = document.createTextNode(element.file_id);
@@ -495,6 +649,24 @@ if ($the_query_terms->have_posts()):
 			tr.appendChild(tdFileId);
 
 			insertTitleField(element.file_id, element.title, tr, inputArrayJs);
+			insertDescriptionField(element.file_id, element.description, tr, inputArrayJs);
+
+			for (let i = 1; i < custom_fields_cnt; i++) {
+				insertCustomField(element.file_id, i, element["cf_" + i], tr, inputArrayJs)
+			}
+
+			insertTagsield(element.file_id, element.tags, tr, inputArrayJs);
+
+			for (let i = 0; i < allCategories.length; i++) {
+				// console.log("Category", allCategories[i]);
+				let category = allCategories[i];
+				// console.log("  element", element, 
+				insertCategoryField(element.file_id, category.term_id, element["cat_term_id_" + category.term_id], tr, inputArrayJs)
+			}
+
+			// 		$table.= getCheckboxField($file_id, $category -> name, '_sf_file_cat_'.$file_id. '_'.$category -> term_id, $catValue, $checkboxArrayJs);
+			// $table.= getCheckboxField($file_id, $category -> name, '_sf_file_cat_origin_'.$file_id. '_'.$category -> term_id, $catValue, $checkboxArrayJs, true);
+
 
 			table.appendChild(tr);
 		});
@@ -502,6 +674,68 @@ if ($the_query_terms->have_posts()):
 
 		console.log("fillTableContents end ", table);
 
+	}
+
+	function replacePagination(pagination) {
+		/*
+		TODO CURRENTLY: Pagination funktioniert nicht
+		remove current href and insert on other position --> fertig
+		remove current span and insert on other position(switch positions) --> fertig
+		
+		Was funktioniert:
+		* Darstellung der Buttons in der richtigen Reihenfole-- > erledigt
+			* Wegsenden der Pagenummern ? --> erledigt
+
+		Was nicht:
+		* Browse files text ist weg-- > erledigt
+		Daten, die geliefert werden sind immer Page 1 ???? --> erledigt
+			* CurrentPage ist immer 1 warum ? --> erledigt
+				*/
+
+		var parents = document.getElementsByClassName("shared-files-pagination-improved");
+		//  console.log("replacePagination parents", parents, parents[0]);
+		if (parents && parents[0]) {
+			let parent = parents[0];
+			if (parent != null) {
+				parent.innerHTML = '';
+			}
+			// console.log("replacePagination parent", parent);
+			if (pagination) {
+				var div = document.createElement('div');
+				div.innerHTML = pagination.trim();
+				// console.log("replacePagination intermediate div", div);
+				let parents = div.getElementsByClassName("shared-files-pagination-improved");
+				// console.log("replacePagination paginationParent", parents);
+				if (parents && parents.length > 0) {
+					var lastInserted = null;
+					for (var i = parents[0].children.length - 1; i > 0; i--) {
+						var child = parents[0].children[i];
+						// console.log("replacePagination child to insert", child, child.toString(), child.text);
+						if (child) {
+							if (child.nodeName.toLowerCase() == "a") {
+								child.setAttribute('href', 'javascript:void(0);')
+								child.addEventListener("click", (ele) => {
+									if (ele && ele.target && ele.target.text) {
+										console.log("BEFORE CLICK ele", ele, ele.target, ele.target.text);
+										onInputSearchText(ele.target.text);
+									}
+								})
+							}
+							// console.log("replacePagination child to insert 2", child, child.toString(), child.text, child.onclick);
+							if (lastInserted)
+								parent.insertBefore(child, lastInserted);
+							else {
+								parent.append(child);
+							}
+							lastInserted = child;
+						}
+					}
+
+					// console.log("replacePagination paginationParent AFTER FOR", parents, parents[0]);
+
+				}
+			}
+		}
 	}
 
 	function insertInputField(file_id, cf_id, name, value, container, inputArray, hidden = false) {
@@ -536,6 +770,52 @@ if ($the_query_terms->have_posts()):
 		container.appendChild(input); // put it into the DOM
 	}
 
+	function insertCheckboxField(file_id, cf_id, name, value, container, checkboxArrayJs, hidden = false) {
+		// 			$obj = new stdClass();
+		// $obj->file_id = $file_id;
+		// $obj->cat_name = $cat_name;
+		// $obj->value = $value;
+		// array_push($checkboxArray, [$name => $obj]);
+
+		// if ($hidden) {
+		// 	if ($value)
+		// 		return '<input type="hidden" name="'.$name. '" id="'.$name. '" checked value="'.$value. '" />';
+		// else
+		// 	return '<input type="hidden" name="'.$name. '" id="'.$name. '" value="'.$value. '" "/>';
+		// } else {
+		// 	if ($value)
+		// 		return '<input type="checkbox" name="'.$name. '" id="'.$name. '" checked value="'.$value. '" onchange="checkboxOnChange(this.name, this.value)"/>';
+		// else
+		// 	return '<input type="checkbox" name="'.$name. '" id="'.$name. '" value="'.$value. '" onchange="checkboxOnChange(this.name, this.checked)"/>';
+		// }
+
+		var input = document.createElement("input");
+
+		let type = "checkbox";
+		if (hidden) {
+			type = "hidden";
+		}
+
+		if (value) {
+			input.value = value;
+			input.checked = true;
+		}
+
+		if (!hidden && value) {
+			input.onchange = "checkboxOnChange(this.name, this.value)"
+		}
+
+		input.type = type;
+		input.name = name;
+		input.id = name;
+
+		//console.log("insertCheckboxField file_id, cf_id, name, value", file_id, cf_id, name, value);
+		//console.log("insertCheckboxField INPUT", input);
+		container.appendChild(input); // put it into the DOM
+
+	}
+
+
 	function insertTitleField(file_id, title, tr, inputArrayJs) {
 		var td = document.createElement('td');
 		insertInputField(file_id, null, '_sf_file_title_' + file_id, title, td, inputArrayJs, false);
@@ -543,6 +823,39 @@ if ($the_query_terms->have_posts()):
 
 		tr.appendChild(td);
 	}
+
+	function insertDescriptionField(file_id, description, tr, inputArrayJs) {
+		var td = document.createElement('td');
+		insertInputField(file_id, null, '_sf_file_description_' + file_id, description, td, inputArrayJs, false);
+		insertInputField(file_id, null, '_sf_file_description_origin_' + file_id, description, td, inputArrayJs, true);
+
+		tr.appendChild(td);
+	}
+
+	function insertCustomField(file_id, n, value, tr, inputArrayJs) {
+		var td = document.createElement('td');
+		insertInputField(file_id, n, '_sf_file_cf_' + file_id + '_' + n, value, td, inputArrayJs, false);
+		insertInputField(file_id, n, '_sf_file_cf__origin_' + file_id + '_' + n, value, td, inputArrayJs, true);
+
+		tr.appendChild(td);
+	}
+
+	function insertTagsield(file_id, tags, tr, inputArrayJs) {
+		var td = document.createElement('td');
+		insertInputField(file_id, null, '_sf_file_tags_' + file_id, tags, td, inputArrayJs, false);
+		insertInputField(file_id, null, '_sf_file_tags__origin_' + file_id, tags, td, inputArrayJs, true);
+
+		tr.appendChild(td);
+	}
+
+	function insertCategoryField(file_id, term_id, value, tr, checkboxArrayJs) {
+		var td = document.createElement('td');
+		insertCheckboxField(file_id, term_id, '_sf_file_cat_' + file_id + '_' + term_id, value, td, checkboxArrayJs, false);
+		insertCheckboxField(file_id, term_id, '_sf_file_cat_origin_' + file_id + '_' + term_id, value, td, checkboxArrayJs, true);
+
+		tr.appendChild(td);
+	}
+
 
 </script>
 

@@ -21,13 +21,13 @@ function saveTitles($tfiltered): void
 function saveDescriptions($desfiltered)
 {
 	foreach ($desfiltered as $key => $value) {
-		// error_log("update description " . print_r($key, true));
-		// error_log("update value " . print_r($value, true));
+		 error_log("update description " . print_r($key, true));
+		 error_log("update value " . print_r($value, true));
 		$id = intval($key);
-		// error_log("id, val: " . print_r($id, true) . " --> " . print_r($value["value"], true));
+		 error_log("id, val: " . print_r($id, true) . " --> " . print_r($value["value"], true));
 
 		$res = update_post_meta($id, '_sf_description', $value["value"]);
-		// error_log("update RESULT " . print_r($res, true));
+		 error_log("update RESULT " . print_r($res, true));
 	}
 }
 

@@ -14,7 +14,7 @@ class SharedFilesExtensionsPublicAjax
 
 	public function sf_extensions_get_files()
 	{
-		error_log("sf_extensions_get_files");
+		// error_log("sf_extensions_get_files");
 		$html = "<p>test</p>";
 		$html_allowed_tags = [
 			'p' => [
@@ -34,11 +34,22 @@ function sf_extensions_get_files2()
 {
 	error_log("sf_extensions_get_files 2 " . print_r($_POST, true));
 
+	$tax_query[] = array(
+		'taxonomy' => 'post_tag',
+		'field' => 'slug',
+		'terms' => $_POST["searchField"],
+		'operator' => 'LIKE',
+		'include_children' => false
+	);
+
+	// TAGS TODO:
+	// Alle Tags abfragen, auf Like, filtern auf Tags in 
 	$args = array(
 		'post_type' => 'shared_file',
 		'posts_per_page' => $_POST["posts_per_page"],
 		'paged' => $_POST["paged"],
-		's' => $_POST["searchField"]
+		's' => $_POST["searchField"],
+		'tax_query' => $tax_query,
 	);
 	$custom_fields_cnt = $_POST["custom_fields_cnt"];
 
@@ -53,7 +64,18 @@ function sf_extensions_get_files2()
 	$taxonomy_slug = 'shared-file-category';
 	$allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
 
+	// $tag_slug = 'post_tag';
+	$tags1 = get_terms(array(
+		'taxonomy' => 'post_tag',
+		'hide_empty' => false,
+		'name__like' => $_POST["searchField"]
+	));
+	// $tags = get_terms($tag_slug);
+	error_log("sf_extensions_get_files tags " . print_r($tags1, true));
+
+	error_log("sf_extensions_get_files args for the query " . print_r($args, true));
 	$the_query_terms = new WP_Query($args);
+	//  error_log("sf_extensions_get_files the_query_terms" . print_r($the_query_terms, true));
 	$result = [];
 	if ($the_query_terms->have_posts()):
 		while ($the_query_terms->have_posts()):
@@ -89,6 +111,7 @@ function sf_extensions_get_files2()
 			}
 
 			$tags = get_the_terms($file_id, $tag_slug);
+			error_log("tags for fileId=" . $file_id . ": " . print_r($tags, true));
 			$tagValue = "";
 			if ($tags) {
 				foreach ($tags as $tag) {
@@ -123,11 +146,21 @@ function sf_extensions_get_files2()
 		endwhile;
 	endif;
 
-	error_log("sf_extensions_get_files result " . print_r($result, true));
+	// error_log("sf_extensions_get_files result " . print_r($result, true));
 
-	//$html = "<p>test</p>";
-	$html = json_encode($result);
-	error_log("sf_extensions_get_files result html " . print_r($html, true));
+	$pagination_active = 1;
+	$_GET['_page'] = $_POST["paged"];
+	// $the_query_terms->max_num_pages = 
+	$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $the_query_terms, 'default');
+	// array_push_assoc($result, "pagination", $pagination);
+
+	$response = array(
+		"data" => $result,
+		"pagination" => $pagination
+	);
+
+	$html = json_encode($response);
+	// error_log("sf_extensions_get_files result html " . print_r($html, true));
 	echo wp_send_json($html);
 	// $html_allowed_tags = [
 	// 	'p' => [

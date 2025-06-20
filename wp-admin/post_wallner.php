@@ -38,7 +38,7 @@ if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 
 
 $vars = $_POST;
-//error_log("POST VALUES " . print_r($vars, true));
+// error_log("POST VALUES " . print_r($vars, true));
 
 if (gettype($vars) == "array") {
 	// Read post data
@@ -69,7 +69,7 @@ if (gettype($vars) == "array") {
 
 
 	// error_log("Title values:" . print_r($title_values, true));
-	// error_log("Description values:" . print_r($desc_values, true));
+	 error_log("Description values:" . print_r($desc_values, true));
 	// error_log("Tag values:" . print_r($tag_values, true));
 	// error_log("Custom Field values:" . print_r($customfield_values, true));
 	// error_log("Category values:" . print_r($category_values, true));
@@ -81,6 +81,7 @@ if (gettype($vars) == "array") {
 	saveTitles($tfiltered);
 
 	$desfiltered = array_filter($desc_values, "modifiedValues");
+	 error_log("Description values desfiltered:" . print_r($desfiltered, true));
 	saveDescriptions($desfiltered);
 
 	$tagsfiltered = array_filter($tag_values, "modifiedValues");
@@ -119,7 +120,32 @@ BUGS:
 
 PAGES angezeigt, pagination inaktiv ok
 
-shared-files-ajax-form
+TODO 07062025: Pagination links umleiten auf meinen ep --> erledigt
+TODO 17062025: 
+* Tags bei Suche falsch --> korrigiert
+* SAVE FUNKTIONIERT NICHT bei Suchstring 
+	--> evt. inputArrayJs Array noch nicht richtig initialisiert eher nicht
+	--> inputArrayJs
+
+	MUSS ES UMSTELLEN AUF DIREKTES LADEN IMMER ÜBER DIE DEFAULT TEMPLATE SEITE
+	--> FUNKTIONIERT grundsätzlich, 
+		* ES FEHLT DIE WEITERLEITUNG BEIM POST DER PARAMETER
+		* Wechsel auf Page: Search Parameter mitschicken
+		--> für beide GET-Parameter mitgeben! Searchstring, 
+
+
+* WENN Suchstring vor dem Speichern, dann muss forgewarded werden mit Parameter für Suchstring und PAGENR	
+
+		* Suche in ALLEN FELDERN: Desc, CustomF, Tags
+		* Kategorien - Filterung
+
+TODO 20062025:
+* Suche erfolgreich auf template-Seite umgestellt
+* Paging parameter werden richtig gesendet
+* Suchtext wird korrekt geschickt und wieder befüllt
+* Direkte DB Abfrage funktioniert
+TODOs
+* Reihenfolge auf der Seite funktioniert NICHT!
 */
 
 wp_redirect($sendback_test);
