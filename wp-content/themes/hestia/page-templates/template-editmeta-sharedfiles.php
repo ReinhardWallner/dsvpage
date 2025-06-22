@@ -134,8 +134,14 @@ if (isset($_POST['searchField'])) {
 } else if (isset($_GET['searchField'])) {
 	$search = $_GET["searchField"];
 }
+$category = null;
+if (isset($_POST['sf_category'])) {
+	$category = $_POST["sf_category"];
+} else if (isset($_GET['sf_category'])) {
+	$category = $_GET["sf_category"];
+}
 
-error_log("TEMPLATE search " . print_r($search, true));
+error_log("TEMPLATE search " . print_r($search, true) . ", cat: " . print_r($category, true));
 ?>
 
 <!-- pass variables to javascript -->
@@ -156,12 +162,46 @@ $searchFields = '<form
    enctype="multipart/form-data">';
 
 $searchFields .= '<div>';
+$searchFields .= '<table style="width: 100%">
+    <colgroup>
+       <col span="1" style="width: 30%;">
+       <col span="1" style="width: 70%;">
+    </colgroup><tr><td>';
+
 if ($search) {
-	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus  placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()" >';
+	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()" >';
 } else {
-	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus  placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" >';
+	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" >';
 }
-$searchFields .= '</div>';
+
+$searchFields .= '</td><td>';
+
+$categories_order = 'ASC';
+$argsCategoryCombo = array(
+	'taxonomy' => 'shared-file-category',
+	'name' => 'sf_category',
+	'show_option_all' => esc_attr__('Choose category', 'shared-files'),
+	'hierarchical' => true,
+	'class' => 'shared-files-category-select select_v2',
+	'echo' => false,
+	'value_field' => 'slug',
+	// 'exclude'         => $exclude_cat,
+	'selected' => $category,
+
+	//   'orderby'         => $categories_orderby,
+	'order' => $categories_order,
+	'hide_if_empty' => true
+
+);
+
+$categoryDropdowm = wp_dropdown_categories($argsCategoryCombo);
+$endIndex = strpos($categoryDropdowm, ">");
+$categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
+error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
+$searchFields .= '<div class="shared-files-category-select-container">';
+$searchFields .= $categoryDropdowm;
+$searchFields .= '</div></td></tr></div>';
+
 $searchFields .= '<input type="hidden" name="custom" value="Something custom">
 </form>';
 
@@ -194,6 +234,9 @@ if ($search) {
 	or (m.meta_key like '_sf_file_upload_cf%' and m.meta_value like '%{$search}%')
 	)";
 }
+if ($category) {
+	$filter .= "and (tax.taxonomy='shared-file-category' and t.name like '%{$category}%')";
+}
 
 $limit = $posts_per_page;
 $offset = ($paged - 1) * $posts_per_page;
@@ -204,7 +247,7 @@ limit {$limit} offset {$offset}";
 $queryCount = "Select count(*) as total from (" . $select . "\n" . $filter . ") qu";
 $query = $select . "\n" . $filter . "\n" . $pageparams;
 
-// error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
+//error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
 $queryCountResult = $wpdb->get_results($queryCount);
 $total = array_column($queryCountResult, 'total')[0];
 // error_log("editmeta queryCountResult: " . print_r($queryCountResult, true));
@@ -242,6 +285,7 @@ if ($total > 0) {
 		$table .= '<td>' . sanitize_title($category->slug) . '</td>';
 	}
 	$table .= "</tr>";
+	$tableRows = [];
 	error_log("editmeta args for the query" . print_r($args, true));
 	$the_query_terms = new WP_Query($args);
 
@@ -249,10 +293,10 @@ if ($total > 0) {
 		while ($the_query_terms->have_posts()):
 			$the_query_terms->the_post();
 			$file_id = intval(get_the_id());
-
-			$table .= "<tr><td>" . $file_id . "</td>";
+			$row = "";
+			$row .= "<tr><td>" . $file_id . "</td>";
 			$title = get_the_title();
-			addTitleField($table, $file_id, $title, $inputArray);
+			addTitleField($row, $file_id, $title, $inputArray);
 
 			error_log("FILE ID " . print_r($file_id, true));
 			// Custom fields
@@ -263,7 +307,7 @@ if ($total > 0) {
 				$desc = str_replace('</p>', '', $desc);
 			}
 
-			addDescriptionField($table, $file_id, $desc, $inputArray);
+			addDescriptionField($row, $file_id, $desc, $inputArray);
 
 			$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 			for ($n = 1; $n < $custom_fields_cnt; $n++) {
@@ -273,7 +317,7 @@ if ($total > 0) {
 						$val = sanitize_text_field($c['_sf_file_upload_cf_' . $n][0]);
 					}
 				}
-				addCustomFieldField($table, $file_id, $n, $val, $inputArray);
+				addCustomFieldField($row, $file_id, $n, $val, $inputArray);
 			}
 
 			// Tags
@@ -288,7 +332,7 @@ if ($total > 0) {
 				$tagValue = substr($tagValue, 0, strlen($tagValue) - 2);
 			}
 
-			addTagsField($table, $file_id, $tagValue, $inputArray);
+			addTagsField($row, $file_id, $tagValue, $inputArray);
 
 			// Categories
 			if (is_array($allcategories)) {
@@ -311,15 +355,25 @@ if ($total > 0) {
 						$catValue = "on";
 					}
 
-					addCategoryField($table, $file_id, $category, $catValue, $checkboxArray);
+					addCategoryField($row, $file_id, $category, $catValue, $checkboxArray);
 				}
 
 			}
 
-			$table .= "</tr>";
+			$row .= "</tr>";
+
+			// insert elements on correct index
+			$array_index = array_search($file_id, $ids);
+			$tableRows[$array_index] = $row;
 
 		?>
 		<?php endwhile;
+
+		// add rows to output
+		for ($i = 0; $i < count($tableRows); $i++) {
+			$row = $tableRows[$i];
+			$table .= $row;
+		}
 
 		$table .= "</table>";
 		$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
@@ -348,7 +402,7 @@ if ($total > 0) {
 		if ($search):
 			$pagination = preg_replace('/(href=\")(.+)(\")/', '${1}${2}&searchField=' . $searchtest . '${3}', $pagination);
 		endif;
-		error_log("editmeta pagination " . print_r($pagination, true));
+		// error_log("editmeta pagination " . print_r($pagination, true));
 
 	else:
 		$table .= "<p>Keine Daten gefunden</p>";
@@ -507,6 +561,10 @@ add_action('wp_footer', 'add_onload');
 		if (searchField.length > 0) {
 			searchField[0].disabled = changesExists == true;
 		}
+		let categoryDropdowm = document.getElementsByName("sf_category");
+		if (categoryDropdowm.length > 0) {
+			categoryDropdowm[0].disabled = changesExists == true;
+		}
 
 		var pageNumbers = document.getElementsByClassName("page-numbers");
 		if (pageNumbers) {
@@ -587,6 +645,10 @@ add_action('wp_footer', 'add_onload');
 			// 	replaceGridData(JSON.parse(a));
 			// }))
 		}
+	}
+
+	function onCategoryChange() {
+		document.getElementById('the-redirect-form').submit();
 	}
 
 	function replaceGridData(data) {
