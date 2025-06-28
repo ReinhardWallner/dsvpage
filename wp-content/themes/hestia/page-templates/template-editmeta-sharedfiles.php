@@ -8,12 +8,89 @@
  * @since Hestia 1.0
  */
 
+// start attention: This code has before get_header section!!!
+include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_exceldownload.php";
+include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_query_data.php";
+
+$posts_per_page = 3;
+$paged = 1;
+$s = get_option('shared_files_settings');
+
+$tag_slug = 'post_tag';
+if (isset($s['tag_slug']) && $s['tag_slug']) {
+	$tag_slug = sanitize_title($s['tag_slug']);
+}
+
+
+error_log("TEMPLATE START _POST " . print_r($_POST, true));
+error_log("TEMPLATE START _GET " . print_r($_GET, true));
+
+if (isset($_GET['_page']) && $_GET['_page']) {
+	$paged = (int) $_GET['_page'];
+} elseif (get_query_var('paged')) {
+	$paged = absint(get_query_var('paged'));
+}
+
+$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
+
+$taxonomy_slug = 'shared-file-category';
+$allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
+
+$search = null;
+if (isset($_POST['searchField'])) {
+	$search = $_POST["searchField"];
+} else if (isset($_GET['searchField'])) {
+	$search = $_GET["searchField"];
+}
+$category = null;
+if (isset($_POST['sf_category'])) {
+	$category = $_POST["sf_category"];
+} else if (isset($_GET['sf_category'])) {
+	$category = $_GET["sf_category"];
+}
+
+$excel_export = false;
+if (isset($_GET['excel_export'])) {
+	$excel_export = $_GET["excel_export"];
+}
+
+if ($excel_export) {
+	$fileName = "notenarchiv_export.csv";
+	if (isset($_POST['excelImportFilename'])) {
+		$fileName = $_POST["excelImportFilename"] . ".csv";
+	}
+
+	$parameters = array(
+		"posts_per_page" => $posts_per_page,
+		"paged" => 0,
+		"wpdb" => $wpdb,
+		"search" => $search,
+		"category" => $category,
+		"custom_fields_cnt" => $custom_fields_cnt,
+		"allcategories" => $allcategories,
+		"tag_slug" => $tag_slug,
+		"settings" => $s
+	);
+
+	$data = queryData($parameters);
+	// error_log("DATA: " . print_r($data, true));
+	downloadExcelData($data, $fileName);
+
+	wp_reset_postdata();
+	return;
+}
+// end attention: This code has before get_header section!!!
+
 get_header();
 
 /**
  * Don't display page header if header layout is set as classic blog.
  */
 do_action('hestia_before_single_page_wrapper');
+
+// require_once __DIR__ . '/admin.php';
+
+// include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_exceldownload.php";
 
 ?>
 
@@ -109,41 +186,6 @@ function addCategoryField(&$table, $file_id, &$category, $catValue, &$checkboxAr
 
 ?>
 
-<?php
-$posts_per_page = 3;
-$paged = 1;
-
-error_log("TEMPLATE START _POST " . print_r($_POST, true));
-error_log("TEMPLATE START _GET " . print_r($_GET, true));
-
-if (isset($_GET['_page']) && $_GET['_page']) {
-	$paged = (int) $_GET['_page'];
-} elseif (get_query_var('paged')) {
-	$paged = absint(get_query_var('paged'));
-}
-
-$s = get_option('shared_files_settings');
-$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
-
-$taxonomy_slug = 'shared-file-category';
-$allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
-
-$search = null;
-if (isset($_POST['searchField'])) {
-	$search = $_POST["searchField"];
-} else if (isset($_GET['searchField'])) {
-	$search = $_GET["searchField"];
-}
-$category = null;
-if (isset($_POST['sf_category'])) {
-	$category = $_POST["sf_category"];
-} else if (isset($_GET['sf_category'])) {
-	$category = $_GET["sf_category"];
-}
-
-error_log("TEMPLATE search " . print_r($search, true) . ", cat: " . print_r($category, true));
-?>
-
 <!-- pass variables to javascript -->
 <script>
 	var paged = <?php echo json_encode($paged) ?>;
@@ -165,7 +207,8 @@ $searchFields .= '<div>';
 $searchFields .= '<table style="width: 100%">
     <colgroup>
        <col span="1" style="width: 30%;">
-       <col span="1" style="width: 70%;">
+       <col span="1" style="width: 20%;">
+       <col span="1" style="width: 50%;">
     </colgroup><tr><td>';
 
 if ($search) {
@@ -197,23 +240,22 @@ $argsCategoryCombo = array(
 $categoryDropdowm = wp_dropdown_categories($argsCategoryCombo);
 $endIndex = strpos($categoryDropdowm, ">");
 $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
-error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
+// error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
 $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
-$searchFields .= '</div></td></tr></div>';
+$searchFields .= '</div></td>';
+$searchFields .= '<td>';
+$searchFields .= '<button onclick="onExcelExportclick()">Excel export</button>';
+$searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
+$searchFields .= '</td></tr></div>';
+$searchFields .= '</form>';
 
-$searchFields .= '<input type="hidden" name="custom" value="Something custom">
-</form>';
 
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
 $table .= '<table name="dataTable" style="margin: 10px;">';
 $table .= "<tr><td>Id</td><td>Titel</td><td>Beschreibung</td>";
 
 
-$tag_slug = 'post_tag';
-if (isset($s['tag_slug']) && $s['tag_slug']) {
-	$tag_slug = sanitize_title($s['tag_slug']);
-}
 
 $args = null;
 
@@ -247,7 +289,7 @@ limit {$limit} offset {$offset}";
 $queryCount = "Select count(*) as total from (" . $select . "\n" . $filter . ") qu";
 $query = $select . "\n" . $filter . "\n" . $pageparams;
 
-//error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
+error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
 $queryCountResult = $wpdb->get_results($queryCount);
 $total = array_column($queryCountResult, 'total')[0];
 // error_log("editmeta queryCountResult: " . print_r($queryCountResult, true));
@@ -259,7 +301,6 @@ $queryResult = $wpdb->get_results($query);
 $ids = array_column($queryResult, 'id');
 // error_log("editmeta queryResult: " . print_r($ids, true));
 
-$fileIds = [];
 
 $pagination = "";
 
@@ -410,9 +451,10 @@ if ($total > 0) {
 } else {
 	$table .= "<p>Keine Daten gefunden</p>";
 }
-?>
+// ?>
 
 
+//
 <?php
 // error_log("searchFields: " . print_r($searchFields, true));
 // error_log("table: " . print_r($table, true));
@@ -623,15 +665,15 @@ add_action('wp_footer', 'add_onload');
 				cfCount = 20;
 
 			// console.log("onInputSearchText  before sent ajax cfCount", cfCount);
-			let data = {
-				action: "sf_extensions_get_files",
-				custom_fields_cnt: cfCount,
-				searchField: searchText,
-				paged: pagedToSend, // on SEARCH Change always page 1!!!
-				// _page: pagedToSend, // on SEARCH Change always page 1!!!
-				posts_per_page: posts_per_page
+			// let data = {
+			// 	action: "sf_extensions_get_files",
+			// 	custom_fields_cnt: cfCount,
+			// 	searchField: searchText,
+			// 	paged: pagedToSend, // on SEARCH Change always page 1!!!
+			// 	// _page: pagedToSend, // on SEARCH Change always page 1!!!
+			// 	posts_per_page: posts_per_page
 
-			};
+			// };
 			//  let ajaxurl = "http://localhost:8081/dsvpage/wp-admin/admin-ajax.php";
 			let ajaxurl = "http://localhost:8081/dsvpage/test-sharedfiles-edit";
 
@@ -644,6 +686,17 @@ add_action('wp_footer', 'add_onload');
 			// 	let result = JSON.parse(a);
 			// 	replaceGridData(JSON.parse(a));
 			// }))
+		}
+	}
+
+	function onExcelExportclick() {
+		let fileName = prompt("Bitte geben Sie den gewünschten Dateinamen ein", "");
+		if (fileName != null) {
+			document.getElementById("excelImportFilename").value = fileName;
+			var form = document.getElementById('the-redirect-form');
+			form.action = form.action + '?excel_export=1';
+			console.log("onExcelExportclick ", form.action, fileName);
+			form.submit();
 		}
 	}
 

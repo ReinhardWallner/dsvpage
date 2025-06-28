@@ -69,7 +69,7 @@ if (gettype($vars) == "array") {
 
 
 	// error_log("Title values:" . print_r($title_values, true));
-	//error_log("Description values:" . print_r($desc_values, true));
+	// error_log("Description values:" . print_r($desc_values, true));
 	// error_log("Tag values:" . print_r($tag_values, true));
 	// error_log("Custom Field values:" . print_r($customfield_values, true));
 	// error_log("Category values:" . print_r($category_values, true));
@@ -81,7 +81,7 @@ if (gettype($vars) == "array") {
 	saveTitles($tfiltered);
 
 	$desfiltered = array_filter($desc_values, "modifiedValues");
-	//error_log("Description values desfiltered:" . print_r($desfiltered, true));
+	// error_log("Description values desfiltered:" . print_r($desfiltered, true));
 	saveDescriptions($desfiltered);
 
 	$tagsfiltered = array_filter($tag_values, "modifiedValues");
