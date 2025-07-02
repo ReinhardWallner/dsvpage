@@ -11,6 +11,7 @@
 // start attention: This code has before get_header section!!!
 include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_exceldownload.php";
 include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_query_data.php";
+include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_helper_functions.php";
 
 $posts_per_page = 3;
 $paged = 1;
@@ -22,7 +23,7 @@ if (isset($s['tag_slug']) && $s['tag_slug']) {
 }
 
 
-error_log("TEMPLATE START _POST " . print_r($_POST, true));
+error_log("TEMPLATE START _POST " . print_r($_POST, return: true));
 error_log("TEMPLATE START _GET " . print_r($_GET, true));
 
 if (isset($_GET['_page']) && $_GET['_page']) {
@@ -35,6 +36,7 @@ $custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 
 $taxonomy_slug = 'shared-file-category';
 $allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
+// error_log("TEMPLATE START allcategories " . print_r($allcategories, true));
 
 $search = null;
 if (isset($_POST['searchField'])) {
@@ -50,11 +52,12 @@ if (isset($_POST['sf_category'])) {
 }
 
 $excel_export = false;
-if (isset($_GET['excel_export'])) {
-	$excel_export = $_GET["excel_export"];
+
+if (isset($_POST['doExcelExport']) && $_POST["doExcelExport"] == "true") {
+	$excel_export = $_POST["doExcelExport"];
 }
 
-if ($excel_export) {
+if ($excel_export == true) {
 	$fileName = "notenarchiv_export.csv";
 	if (isset($_POST['excelImportFilename'])) {
 		$fileName = $_POST["excelImportFilename"] . ".csv";
@@ -75,8 +78,6 @@ if ($excel_export) {
 	$data = queryData($parameters);
 	// error_log("DATA: " . print_r($data, true));
 	downloadExcelData($data, $fileName);
-
-	wp_reset_postdata();
 	return;
 }
 // end attention: This code has before get_header section!!!
@@ -240,224 +241,146 @@ $argsCategoryCombo = array(
 $categoryDropdowm = wp_dropdown_categories($argsCategoryCombo);
 $endIndex = strpos($categoryDropdowm, ">");
 $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
-// error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
+error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
 $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td>';
 $searchFields .= '<td>';
 $searchFields .= '<button onclick="onExcelExportclick()">Excel export</button>';
+
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
+$searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
 $searchFields .= '</td></tr></div>';
 $searchFields .= '</form>';
 
 
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
 $table .= '<table name="dataTable" style="margin: 10px;">';
-$table .= "<tr><td>Id</td><td>Titel</td><td>Beschreibung</td>";
-
-
-
-$args = null;
-
-$select = "SELECT distinct p.id, p.post_title
-FROM `wp_posts` p
-left join `wp_postmeta` m on p.id=m.post_id and (m.meta_key like '%_sf_file_upload_cf%' or m.meta_key like '%_sf_description%')
-left join `wp_term_relationships` trel on trel.object_id=p.id
-left join `wp_terms` t on trel.term_taxonomy_id=t.term_id
-left join `wp_term_taxonomy` tax on tax.term_id=t.term_id and (tax.taxonomy='shared-file-tag' or tax.taxonomy='shared-file-category')
-where post_type='shared_file'";
-$filter = "";
-
-if ($search) {
-	$filter = "and 
-	(p.post_title like '%{$search}%' 
-	or t.name like '%{$search}%'
-	or (m.meta_key='_sf_description' and m.meta_value like '%{$search}%')
-	or (m.meta_key like '_sf_file_upload_cf%' and m.meta_value like '%{$search}%')
-	)";
-}
-if ($category) {
-	$filter .= "and (tax.taxonomy='shared-file-category' and t.name like '%{$category}%')";
-}
-
-$limit = $posts_per_page;
-$offset = ($paged - 1) * $posts_per_page;
-//  if($paged > 1)
-$pageparams = "order by p.post_title
-limit {$limit} offset {$offset}";
-
-$queryCount = "Select count(*) as total from (" . $select . "\n" . $filter . ") qu";
-$query = $select . "\n" . $filter . "\n" . $pageparams;
-
-error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
-$queryCountResult = $wpdb->get_results($queryCount);
-$total = array_column($queryCountResult, 'total')[0];
-// error_log("editmeta queryCountResult: " . print_r($queryCountResult, true));
-error_log("editmeta queryCountResult 2: " . print_r($total, true));
-
-// error_log("editmeta SELECT STATEMENT: " . print_r($query, true));
-$queryResult = $wpdb->get_results($query);
-// error_log("editmeta queryResult: " . print_r($queryResult, true));
-$ids = array_column($queryResult, 'id');
-// error_log("editmeta queryResult: " . print_r($ids, true));
-
 
 $pagination = "";
 
-if ($total > 0) {
-	$args = array(
-		'post_type' => 'shared_file',
-		'post__in' => $ids
-	);
+$parameters = array(
+	"posts_per_page" => $posts_per_page,
+	"paged" => $paged,
+	"wpdb" => $wpdb,
+	"search" => $search,
+	"category" => $category,
+	"custom_fields_cnt" => $custom_fields_cnt,
+	"allcategories" => $allcategories,
+	"tag_slug" => $tag_slug,
+	"settings" => $s
+);
 
-	// Custom Fields Header
-	for ($n = 1; $n < $custom_fields_cnt; $n++) {
-		if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
-			$table .= "<td>" . $cf_title . "</td>";
-		}
-
-	}
-
-	// Tags Header
-	$table .= "<td>Tags</td>";
-
-	// Categories Header
-	foreach ($allcategories as $category) {
-		$table .= '<td>' . sanitize_title($category->slug) . '</td>';
+$data = queryData($parameters);
+// error_log("editmeta data BEFORE insert " . print_r($data, true));
+$firstIndexData = $data[0];
+if ($data["headrow"] && $data["keys"] && is_array($firstIndexData)) {
+	$headRow = $data["headrow"];
+	$table .= "<tr>";
+	foreach ($headRow as $element) {
+		// error_log("head element " . print_r($element, true));
+		$table .= "<td>" . $element . "</td>";
 	}
 	$table .= "</tr>";
-	$tableRows = [];
-	error_log("editmeta args for the query" . print_r($args, true));
-	$the_query_terms = new WP_Query($args);
 
-	if ($the_query_terms->have_posts()):
-		while ($the_query_terms->have_posts()):
-			$the_query_terms->the_post();
-			$file_id = intval(get_the_id());
+	$outerArrayKeys = array_keys(($data));
+	$dataArrayKeys = $data["keys"];
+
+	$rowIndex = 0;
+	foreach ($outerArrayKeys as $outerKey) {
+		if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "args" && $outerKey != "total") {
+			$dataRowArray = $data[$outerKey];
 			$row = "";
-			$row .= "<tr><td>" . $file_id . "</td>";
-			$title = get_the_title();
-			addTitleField($row, $file_id, $title, $inputArray);
-
-			error_log("FILE ID " . print_r($file_id, true));
-			// Custom fields
-			$c = get_post_custom($file_id);
-			$desc = $c["_sf_description"][0];
-			if ($desc !== null && trim($desc) !== '') {
-				$desc = str_replace('<p>', '', $desc);
-				$desc = str_replace('</p>', '', $desc);
-			}
-
-			addDescriptionField($row, $file_id, $desc, $inputArray);
-
-			$custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
-			for ($n = 1; $n < $custom_fields_cnt; $n++) {
-				$val = "";
-				if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
-					if (isset($c['_sf_file_upload_cf_' . $n]) && $c['_sf_file_upload_cf_' . $n]) {
-						$val = sanitize_text_field($c['_sf_file_upload_cf_' . $n][0]);
-					}
-				}
-				addCustomFieldField($row, $file_id, $n, $val, $inputArray);
-			}
-
-			// Tags
-			$tags = get_the_terms($file_id, $tag_slug);
-			$tagValue = "";
-			if ($tags) {
-				foreach ($tags as $tag) {
-					$tagValue .= sanitize_text_field($tag->name) . ', ';
-				}
-			}
-			if (strlen($tagValue) > 0) {
-				$tagValue = substr($tagValue, 0, strlen($tagValue) - 2);
-			}
-
-			addTagsField($row, $file_id, $tagValue, $inputArray);
-
-			// Categories
-			if (is_array($allcategories)) {
-				$categories = get_the_terms($file_id, 'shared-file-category');
-
-				foreach ($allcategories as $category) {
-					$catName = sanitize_title($category->name);
-					$exists = false;
-					if (is_array($categories)) {
-						foreach ($categories as $myCategory) {
-							$catName = sanitize_title($myCategory->name);
-							if ($myCategory->name == $category->name) {
-								$exists = true;
-								break;
-							}
+			// error_log("editmeta data outerKey->dataRowArray " . print_r($outerKey, true) . ", " . print_r($dataRowArray, true));
+			$file_id = null;
+			foreach ($dataArrayKeys as $dataKey) {
+				$element = null;
+				if (is_array($dataKey)) {
+					$firstKey = array_key_first($dataKey);
+					$secondKey = $dataKey[$firstKey];
+					$element = $dataRowArray[$firstKey][$secondKey];
+					// error_log("    dataKey, file_id , firstKey, secondkey, element" . print_r($dataKey, true) . ", file_id=" . $file_id . ", " . print_r($firstKey, true) . ", " . $secondKey . ", " . print_r($element, true));
+					if ($firstKey == "custom_field") {
+						addCustomFieldField($row, $file_id, $secondKey, $element, $inputArray);
+					} else if ($firstKey == "category") {
+						$catValue = "";
+						if ($element == "Ja") {
+							$catValue = "on";
 						}
-					}
-					$catValue = "";
-					if ($exists) {
-						$catValue = "on";
-					}
+						$category = arrayFindObjectElement($allcategories, "term_id", $secondKey);
 
-					addCategoryField($row, $file_id, $category, $catValue, $checkboxArray);
+						addCategoryField($row, $file_id, $category, $catValue, $checkboxArray);
+					}
+				} else {
+					$element = $dataRowArray[$dataKey];
+
+					// error_log("    dataKey element " . $dataKey . print_r($element, true));
+					if ($dataKey == "file_id") {
+
+						$file_id = $element;
+						$row = "";
+						$row .= "<tr><td>" . $file_id . "</td>";
+					} else if ($dataKey == "title") {
+						addTitleField($row, $file_id, $element, $inputArray);
+					} else if ($dataKey == "description") {
+						addDescriptionField($row, $file_id, $element, $inputArray);
+					} else if ($dataKey == "tags") {
+						addTagsField($row, $file_id, $element, $inputArray);
+					}
 				}
-
 			}
 
 			$row .= "</tr>";
 
-			// insert elements on correct index
-			$array_index = array_search($file_id, $ids);
-			$tableRows[$array_index] = $row;
-
-		?>
-		<?php endwhile;
-
-		// add rows to output
-		for ($i = 0; $i < count($tableRows); $i++) {
-			$row = $tableRows[$i];
-			$table .= $row;
+			$tableRows[$outerKey] = $row;
 		}
+	}
 
-		$table .= "</table>";
-		$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
-		$table .= '</form>';
 
-		$pagination_active = 1;
-		$maxpagesFloat = $total / $posts_per_page;
-		$maxpages = intval($total / $posts_per_page);
-		if ($maxpagesFloat > $maxpages)
-			$maxpages++;
-		error_log("editmeta maxpages " . print_r($maxpages, true));
-		$paginationArgs = array(
-			'post_type' => 'shared_file',
-			'posts_per_page' => $posts_per_page,
-			'paged' => $paged,
-			// 's' => $search,
-			'orderby' => 'name'
-		);
 
-		$_GET['_page'] = $paged;
-		$paginationQuery = new WP_Query($args);
-		$paginationQuery->max_num_pages = $maxpages;
-		$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $paginationQuery, 'default');
+	// add rows to output
+	for ($i = 0; $i < count($tableRows); $i++) {
+		$row = $tableRows[$i];
+		$table .= $row;
+	}
 
-		$searchtest = "abc";
-		if ($search):
-			$pagination = preg_replace('/(href=\")(.+)(\")/', '${1}${2}&searchField=' . $searchtest . '${3}', $pagination);
-		endif;
-		// error_log("editmeta pagination " . print_r($pagination, true));
+	$table .= "</table>";
+	$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
+	$table .= '</form>';
 
-	else:
-		$table .= "<p>Keine Daten gefunden</p>";
+	$pagination_active = 1;
+	$maxpagesFloat = $data["total"] / $posts_per_page;
+	$maxpages = intval($data["total"] / $posts_per_page);
+	if ($maxpagesFloat > $maxpages)
+		$maxpages++;
+
+	$paginationArgs = array(
+		'post_type' => 'shared_file',
+		'posts_per_page' => $posts_per_page,
+		'paged' => $paged,
+		// 's' => $search,
+		'orderby' => 'name'
+	);
+
+	$_GET['_page'] = $paged;
+	$paginationQuery = new WP_Query($data["args"]);
+	$paginationQuery->max_num_pages = $maxpages;
+	$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $paginationQuery, 'default');
+
+	$searchtest = "abc";
+	if ($search):
+		$pagination = preg_replace('/(href=\")(.+)(\")/', '${1}${2}&searchField=' . $searchtest . '${3}', $pagination);
 	endif;
+
 } else {
 	$table .= "<p>Keine Daten gefunden</p>";
 }
-// ?>
 
-
-//
-<?php
 // error_log("searchFields: " . print_r($searchFields, true));
-// error_log("table: " . print_r($table, true));
+
+// error_log("tableRows: " . print_r($tableRows, true));
+
+error_log("table: " . print_r($table, true));
 // error_log("pagination: " . print_r($pagination, true));
 echo $searchFields . $table . $pagination;
 
@@ -475,6 +398,12 @@ function add_onload()
 
 	<script type="text/javascript">
 		document.getElementsByTagName('body')[0].onload = onloadInternally;
+
+		document.getElementById("the-redirect-form").addEventListener("submit", function (e) {;
+			setTimeout(() => {
+				document.getElementById("doExcelExport").value = false;
+			}, 100); // kurz verzögern
+		});
 	</script>
 
 	<?php
@@ -693,12 +622,13 @@ add_action('wp_footer', 'add_onload');
 		let fileName = prompt("Bitte geben Sie den gewünschten Dateinamen ein", "");
 		if (fileName != null) {
 			document.getElementById("excelImportFilename").value = fileName;
+			document.getElementById("doExcelExport").value = true;
 			var form = document.getElementById('the-redirect-form');
-			form.action = form.action + '?excel_export=1';
-			console.log("onExcelExportclick ", form.action, fileName);
+			console.log("onExcelExportclick before click", form.action, fileName);
 			form.submit();
 		}
 	}
+
 
 	function onCategoryChange() {
 		document.getElementById('the-redirect-form').submit();

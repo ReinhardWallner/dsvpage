@@ -131,6 +131,7 @@ TODOs
 * Verwerfen Button: Seite neu laden
 * Anzahl der Seiten im Frontend einstellbar
 * Excel Export der gesamten Liste --> Konzert
+	--> Fertig, bis auf Parameter besser in hidden_field setzen
 * Zip-File download der Daten für eine Kategorie, max 30 Lieder (ca. 20-30MB)
 
 

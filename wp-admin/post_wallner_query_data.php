@@ -33,7 +33,7 @@ where post_type='shared_file'";
 	$query = $select . "\n" . $filter;
 
 	$paged = $parameters["paged"];
-	if ($paged > 1) {
+	if ($paged > 0) {
 		$pageparams = "order by p.post_title
 limit {$limit} offset {$offset}";
 	} else {
@@ -42,7 +42,7 @@ limit {$limit} offset {$offset}";
 	$query .= "\n" . $pageparams;
 
 
-	// error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
+	//  error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
 	$wpdb = $parameters["wpdb"];
 	$queryCountResult = $wpdb->get_results($queryCount);
 	$total = array_column($queryCountResult, 'total')[0];
@@ -53,10 +53,12 @@ limit {$limit} offset {$offset}";
 	$queryResult = $wpdb->get_results($query);
 	//error_log("editmeta queryResult: " . print_r($queryResult, true));
 	$ids = array_column($queryResult, 'id');
-	error_log("editmeta queryResult: " . print_r($ids, true));
+	// error_log("editmeta queryResult: " . print_r($ids, true));
 
 
 	$data = array();
+	$data["total"] = $total;
+
 	$headRow = array();
 	array_push($headRow, "Id");
 	array_push($headRow, "Titel");
@@ -187,6 +189,8 @@ limit {$limit} offset {$offset}";
 		else:
 			array_push($data, "<p>Keine Daten gefunden</p>");
 		endif;
+
+		$data["args"] = $args;
 	} else {
 		array_push($data, "<p>Keine Daten gefunden</p>");
 	}
