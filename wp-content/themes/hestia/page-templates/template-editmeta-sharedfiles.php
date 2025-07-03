@@ -76,7 +76,6 @@ if ($excel_export == true) {
 	);
 
 	$data = queryData($parameters);
-	// error_log("DATA: " . print_r($data, true));
 	downloadExcelData($data, $fileName);
 	return;
 }
@@ -207,9 +206,9 @@ $searchFields = '<form
 $searchFields .= '<div>';
 $searchFields .= '<table style="width: 100%">
     <colgroup>
-       <col span="1" style="width: 30%;">
-       <col span="1" style="width: 20%;">
-       <col span="1" style="width: 50%;">
+       <col span="1" style="width: 30%;" />
+       <col span="1" style="width: 20%;" />
+       <col span="1" style="width: 50%;" />
     </colgroup><tr><td>';
 
 if ($search) {
@@ -246,16 +245,16 @@ $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td>';
 $searchFields .= '<td>';
-$searchFields .= '<button onclick="onExcelExportclick()">Excel export</button>';
+$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onExcelExportclick()">Excel export</button>';
 
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
-$searchFields .= '</td></tr></div>';
+$searchFields .= '</div></td></tr></table></div>';
 $searchFields .= '</form>';
 
 
 $table = '<form method="post" name="myForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
-$table .= '<table name="dataTable" style="margin: 10px;">';
+$table .= '<div class="table-scroll-wrapper"><table name="dataTable" style="margin: 10px;">';
 
 $pagination = "";
 
@@ -344,7 +343,7 @@ if ($data["headrow"] && $data["keys"] && is_array($firstIndexData)) {
 		$table .= $row;
 	}
 
-	$table .= "</table>";
+	$table .= "</table></div>";
 	$table .= '<input type="submit" name="submit" disabled="true" value="SpeichernInput"></input>';
 	$table .= '</form>';
 
@@ -399,7 +398,7 @@ function add_onload()
 	<script type="text/javascript">
 		document.getElementsByTagName('body')[0].onload = onloadInternally;
 
-		document.getElementById("the-redirect-form").addEventListener("submit", function (e) {;
+		document.getElementById("the-redirect-form").addEventListener("submit", function (e) {
 			setTimeout(() => {
 				document.getElementById("doExcelExport").value = false;
 			}, 100); // kurz verzögern
@@ -628,7 +627,6 @@ add_action('wp_footer', 'add_onload');
 			form.submit();
 		}
 	}
-
 
 	function onCategoryChange() {
 		document.getElementById('the-redirect-form').submit();
@@ -924,6 +922,50 @@ add_action('wp_footer', 'add_onload');
 
 	input:disabled {
 		background-color: #938a8d;
+	}
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	td div.justify-right {
+		/* there is a shorthand, TODO! 🙂 */
+		margin: auto 0 auto auto;
+	}
+
+	/* Wrapper für die Tabelle */
+	.table-scroll-wrapper {
+		display: block;
+		overflow-x: auto;
+		overflow-y: hidden;
+		max-width: 100%;
+		white-space: nowrap;
+		scrollbar-width: auto;
+		/* Firefox */
+		-ms-overflow-style: auto;
+		/* IE 10+ */
+	}
+
+	/* Tabelle optional stylen */
+	.table-scroll-wrapper table {
+		border-collapse: collapse;
+		width: 100%;
+		/* Mindestbreite für Scroll-Effekt */
+	}
+
+	.table-scroll-wrapper table th,
+	.table-scroll-wrapper table td {
+		padding: 8px 12px;
+		border: 1px solid #ddd;
+		text-align: left;
+	}
+
+	.table-scroll-wrapper input[type="text"] {
+		max-width: 100%;
+		min-width: 150px;
+		box-sizing: border-box;
 	}
 </style>
 
