@@ -51,6 +51,11 @@ if (isset($_POST['sf_category'])) {
 	$category = $_GET["sf_category"];
 }
 
+$nurKategorienAnzeigen = false;
+if (isset($_POST['nurKategorienAnzeigen']) && $_POST['nurKategorienAnzeigen'] == "on") {
+	$nurKategorienAnzeigen = true;
+}
+
 $excel_export = false;
 
 if (isset($_POST['doExcelExport']) && $_POST["doExcelExport"] == "true") {
@@ -207,8 +212,9 @@ $searchFields .= '<div>';
 $searchFields .= '<table style="width: 100%">
     <colgroup>
        <col span="1" style="width: 30%;" />
-       <col span="1" style="width: 20%;" />
-       <col span="1" style="width: 50%;" />
+       <col span="1" style="width: 15%;" />
+       <col span="1" style="width: 15%;" />
+       <col span="1" style="width: 40%;" />
     </colgroup><tr><td>';
 
 if ($search) {
@@ -244,9 +250,16 @@ error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", e
 $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td>';
+if ($nurKategorienAnzeigen == true) {
+	error_log("TEMPLATE Nur kat anzeigen is true");
+	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
+} else {
+	error_log("TEMPLATE Nur kat anzeigen is false");
+	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
+}
+
 $searchFields .= '<td>';
 $searchFields .= '<div class="justify-right"><button style="float:right" onclick="onExcelExportclick()">Excel export</button>';
-
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
 $searchFields .= '</div></td></tr></table></div>';
@@ -271,13 +284,17 @@ $parameters = array(
 );
 
 $data = queryData($parameters);
-// error_log("editmeta data BEFORE insert " . print_r($data, true));
+error_log("editmeta data BEFORE insert " . print_r($data, true));
 $firstIndexData = $data[0];
-if ($data["headrow"] && $data["keys"] && is_array($firstIndexData)) {
+if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstIndexData)) {
 	$headRow = $data["headrow"];
+	if ($nurKategorienAnzeigen == true) {
+		$headRow = $data["headrowKat"];
+	}
+
 	$table .= "<tr>";
 	foreach ($headRow as $element) {
-		// error_log("head element " . print_r($element, true));
+		error_log("head element " . print_r($element, true));
 		$table .= "<td>" . $element . "</td>";
 	}
 	$table .= "</tr>";
@@ -287,7 +304,7 @@ if ($data["headrow"] && $data["keys"] && is_array($firstIndexData)) {
 
 	$rowIndex = 0;
 	foreach ($outerArrayKeys as $outerKey) {
-		if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "args" && $outerKey != "total") {
+		if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
 			$dataRowArray = $data[$outerKey];
 			$row = "";
 			// error_log("editmeta data outerKey->dataRowArray " . print_r($outerKey, true) . ", " . print_r($dataRowArray, true));
@@ -299,7 +316,7 @@ if ($data["headrow"] && $data["keys"] && is_array($firstIndexData)) {
 					$secondKey = $dataKey[$firstKey];
 					$element = $dataRowArray[$firstKey][$secondKey];
 					// error_log("    dataKey, file_id , firstKey, secondkey, element" . print_r($dataKey, true) . ", file_id=" . $file_id . ", " . print_r($firstKey, true) . ", " . $secondKey . ", " . print_r($element, true));
-					if ($firstKey == "custom_field") {
+					if ($firstKey == "custom_field" && $nurKategorienAnzeigen == false) {
 						addCustomFieldField($row, $file_id, $secondKey, $element, $inputArray);
 					} else if ($firstKey == "category") {
 						$catValue = "";
@@ -321,9 +338,9 @@ if ($data["headrow"] && $data["keys"] && is_array($firstIndexData)) {
 						$row .= "<tr><td>" . $file_id . "</td>";
 					} else if ($dataKey == "title") {
 						addTitleField($row, $file_id, $element, $inputArray);
-					} else if ($dataKey == "description") {
+					} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
 						addDescriptionField($row, $file_id, $element, $inputArray);
-					} else if ($dataKey == "tags") {
+					} else if ($dataKey == "tags" && $nurKategorienAnzeigen == false) {
 						addTagsField($row, $file_id, $element, $inputArray);
 					}
 				}
@@ -535,6 +552,10 @@ add_action('wp_footer', 'add_onload');
 		if (categoryDropdowm.length > 0) {
 			categoryDropdowm[0].disabled = changesExists == true;
 		}
+		let nurKategorienAnzeigen = document.getElementsByName("nurKategorienAnzeigen");
+		if (nurKategorienAnzeigen.length > 0) {
+			nurKategorienAnzeigen[0].disabled = changesExists == true;
+		}
 
 		var pageNumbers = document.getElementsByClassName("page-numbers");
 		if (pageNumbers) {
@@ -629,6 +650,10 @@ add_action('wp_footer', 'add_onload');
 	}
 
 	function onCategoryChange() {
+		document.getElementById('the-redirect-form').submit();
+	}
+
+	function onNurKategorienAnzeigenClick() {
 		document.getElementById('the-redirect-form').submit();
 	}
 

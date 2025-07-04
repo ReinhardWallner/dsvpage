@@ -60,8 +60,11 @@ limit {$limit} offset {$offset}";
 	$data["total"] = $total;
 
 	$headRow = array();
+	$headRowKat = array();
 	array_push($headRow, "Id");
+	array_push($headRowKat, "Id");
 	array_push($headRow, "Titel");
+	array_push($headRowKat, "Titel");
 	array_push($headRow, "Beschreibung");
 	$keys = array(0 => "file_id", 1 => "title", 2 => "description");
 
@@ -85,10 +88,12 @@ limit {$limit} offset {$offset}";
 	$allcategories = $parameters["allcategories"];
 	foreach ($allcategories as $category) {
 		array_push($headRow, sanitize_title($category->slug));
+		array_push($headRowKat, sanitize_title($category->slug));
 		array_push($keys, array("category" => $category->term_id));
 	}
 	// array_push($data, $headRow);
 	$data["headrow"] = $headRow;
+	$data["headrowKat"] = $headRowKat;
 	$data["keys"] = $keys;
 
 	// error_log("allcategories: " . print_r($allcategories, true));
