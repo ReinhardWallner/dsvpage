@@ -126,6 +126,8 @@ limit {$limit} offset {$offset}";
 				// array_push($row, $desc);
 				$row["description"] = $desc;
 
+				$row["filename"] = $c["_sf_filename"][0];
+
 				$custom_fields_cntint = intval($parameters['custom_fields_cnt']);
 				for ($n = 1; $n < $custom_fields_cntint; $n++) {
 					$val = "";

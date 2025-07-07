@@ -12,6 +12,7 @@
 include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_exceldownload.php";
 include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_query_data.php";
 include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_helper_functions.php";
+include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_zipfilecreation.php";
 
 $posts_per_page = 3;
 $paged = 1;
@@ -23,8 +24,8 @@ if (isset($s['tag_slug']) && $s['tag_slug']) {
 }
 
 
-error_log("TEMPLATE START _POST " . print_r($_POST, return: true));
-error_log("TEMPLATE START _GET " . print_r($_GET, true));
+// error_log("TEMPLATE START _POST " . print_r($_POST, return: true));
+// error_log("TEMPLATE START _GET " . print_r($_GET, true));
 
 if (isset($_GET['_page']) && $_GET['_page']) {
 	$paged = (int) $_GET['_page'];
@@ -84,6 +85,42 @@ if ($excel_export == true) {
 	downloadExcelData($data, $fileName);
 	return;
 }
+
+$zip_file_creation = false;
+
+if (isset($_POST['createzipFile']) && $_POST["createzipFile"] == "true") {
+	$zip_file_creation = $_POST["createzipFile"];
+}
+
+if ($zip_file_creation) {
+	$fileName = "notenarchiv.zip";
+	if (isset($_POST['zipfilename'])) {
+		$fileName = $_POST["zipfilename"] . ".zip";
+	}
+	//TODO: Dynamic path
+	$path = "C:\\xampp\\htdocs\\dsvpage\\wp-content\\uploads\\shared-files";
+
+	$parameters = array(
+		"posts_per_page" => $posts_per_page,
+		"paged" => 0,
+		"wpdb" => $wpdb,
+		"search" => $search,
+		"category" => $category,
+		"custom_fields_cnt" => $custom_fields_cnt,
+		"allcategories" => $allcategories,
+		"tag_slug" => $tag_slug,
+		"settings" => $s
+	);
+
+	$data = queryData($parameters);
+	$path = str_replace("\\", DIRECTORY_SEPARATOR, $path);
+
+	ob_end_clean(); // Buffer löschen – keine Ausgabe darf ins ZIP!
+	
+	createzipfile($data, $path, $fileName);
+	return;
+}
+
 // end attention: This code has before get_header section!!!
 
 get_header();
@@ -93,9 +130,6 @@ get_header();
  */
 do_action('hestia_before_single_page_wrapper');
 
-// require_once __DIR__ . '/admin.php';
-
-// include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_exceldownload.php";
 
 ?>
 
@@ -214,7 +248,8 @@ $searchFields .= '<table style="width: 100%">
        <col span="1" style="width: 30%;" />
        <col span="1" style="width: 15%;" />
        <col span="1" style="width: 15%;" />
-       <col span="1" style="width: 40%;" />
+       <col span="1" style="width: 15%;" />
+       <col span="1" style="width: 25%;" />
     </colgroup><tr><td>';
 
 if ($search) {
@@ -246,22 +281,27 @@ $argsCategoryCombo = array(
 $categoryDropdowm = wp_dropdown_categories($argsCategoryCombo);
 $endIndex = strpos($categoryDropdowm, ">");
 $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
-error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
+// error_log("TEMPLATE categoryDropdowm " . print_r($categoryDropdowm, true) . ", endindex=" . $endIndex);
 $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td>';
 if ($nurKategorienAnzeigen == true) {
-	error_log("TEMPLATE Nur kat anzeigen is true");
+	// error_log("TEMPLATE Nur kat anzeigen is true");
 	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
 } else {
-	error_log("TEMPLATE Nur kat anzeigen is false");
+	// error_log("TEMPLATE Nur kat anzeigen is false");
 	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
 }
 
 $searchFields .= '<td>';
-$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onExcelExportclick()">Excel export</button>';
+$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onZipFileCreationClick()">Zip Datei erstellen</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
+
+$searchFields .= '<td>';
+$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onExcelExportclick()">Excel export</button>';
+$searchFields .= '<input type="hidden" name="zipfilename" id="zipfilename"/>';
+$searchFields .= '<input type="hidden" name="createzipFile" id="createzipFile"/>';
 $searchFields .= '</div></td></tr></table></div>';
 $searchFields .= '</form>';
 
@@ -284,7 +324,7 @@ $parameters = array(
 );
 
 $data = queryData($parameters);
-error_log("editmeta data BEFORE insert " . print_r($data, true));
+// error_log("editmeta data BEFORE insert " . print_r($data, true));
 $firstIndexData = $data[0];
 if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstIndexData)) {
 	$headRow = $data["headrow"];
@@ -294,7 +334,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 
 	$table .= "<tr>";
 	foreach ($headRow as $element) {
-		error_log("head element " . print_r($element, true));
+		// error_log("head element " . print_r($element, true));
 		$table .= "<td>" . $element . "</td>";
 	}
 	$table .= "</tr>";
@@ -418,6 +458,7 @@ function add_onload()
 		document.getElementById("the-redirect-form").addEventListener("submit", function (e) {
 			setTimeout(() => {
 				document.getElementById("doExcelExport").value = false;
+				document.getElementById("createzipFile").value = false;
 			}, 100); // kurz verzögern
 		});
 	</script>
@@ -645,6 +686,17 @@ add_action('wp_footer', 'add_onload');
 			document.getElementById("doExcelExport").value = true;
 			var form = document.getElementById('the-redirect-form');
 			console.log("onExcelExportclick before click", form.action, fileName);
+			form.submit();
+		}
+	}
+
+	function onZipFileCreationClick() {
+		let fileName = prompt("Bitte geben Sie den gewünschten Dateinamen ein", "");
+		if (fileName != null) {
+			document.getElementById("zipfilename").value = fileName;
+			document.getElementById("createzipFile").value = true;
+			var form = document.getElementById('the-redirect-form');
+			console.log("onZipFileCreationClick before click", form.action, fileName);
 			form.submit();
 		}
 	}

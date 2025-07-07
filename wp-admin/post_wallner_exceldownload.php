@@ -17,7 +17,7 @@ function downloadExcelData($data, $fileName)
 		asort($outerArrayKeys);
 		// error_log("outerArrayKeys 2 " . print_r($outerArrayKeys, true));
 		foreach ($outerArrayKeys as $outerKey) {
-			if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "args" && $outerKey != "total") {
+			if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
 				$dataRowArray = $data[$outerKey];
 				addDataRow($dataRowArray, $dataArrayKeys);
 			}
