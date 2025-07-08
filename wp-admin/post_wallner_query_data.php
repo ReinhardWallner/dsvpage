@@ -2,7 +2,7 @@
 
 function queryData($parameters)
 {
-	// error_log("queryData: parameters" . print_r($parameters, true));
+	$nurKategorienAnzeigen = $parameters["nurKategorienAnzeigen"];
 
 	$select = "SELECT distinct p.id, p.post_title
 FROM `wp_posts` p
@@ -14,13 +14,19 @@ where post_type='shared_file'";
 	$filter = "";
 
 	if ($parameters["search"]) {
-		$filter = "and 
+		if ($nurKategorienAnzeigen == true) {
+			$filter = "and 
+	(p.post_title like '%{$parameters["search"]}%')";
+		} else {
+			$filter = "and 
 	(p.post_title like '%{$parameters["search"]}%' 
 	or t.name like '%{$parameters["search"]}%'
 	or (m.meta_key='_sf_description' and m.meta_value like '%{$parameters["search"]}%')
 	or (m.meta_key like '_sf_file_upload_cf%' and m.meta_value like '%{$parameters["search"]}%')
 	)";
+		}
 	}
+
 	if ($parameters["category"]) {
 		$cat = $parameters["category"];
 		$filter .= "and (tax.taxonomy='shared-file-category' and t.name like '%{$cat}%')";

@@ -52,8 +52,16 @@ if (isset($_POST['sf_category'])) {
 	$category = $_GET["sf_category"];
 }
 
+if (isset($_POST['elementsPerPage'])) {
+	$posts_per_page = $_POST["elementsPerPage"];
+} else if (isset($_GET['elementsPerPage'])) {
+	$posts_per_page = $_GET["elementsPerPage"];
+}
+
 $nurKategorienAnzeigen = false;
 if (isset($_POST['nurKategorienAnzeigen']) && $_POST['nurKategorienAnzeigen'] == "on") {
+	$nurKategorienAnzeigen = true;
+} else if (isset($_GET['nurKategorienAnzeigen']) && $_GET['nurKategorienAnzeigen'] == "on") {
 	$nurKategorienAnzeigen = true;
 }
 
@@ -78,7 +86,8 @@ if ($excel_export == true) {
 		"custom_fields_cnt" => $custom_fields_cnt,
 		"allcategories" => $allcategories,
 		"tag_slug" => $tag_slug,
-		"settings" => $s
+		"settings" => $s,
+		"nurKategorienAnzeigen" => $nurKategorienAnzeigen
 	);
 
 	$data = queryData($parameters);
@@ -109,14 +118,15 @@ if ($zip_file_creation) {
 		"custom_fields_cnt" => $custom_fields_cnt,
 		"allcategories" => $allcategories,
 		"tag_slug" => $tag_slug,
-		"settings" => $s
+		"settings" => $s,
+		"nurKategorienAnzeigen" => $nurKategorienAnzeigen
 	);
 
 	$data = queryData($parameters);
 	$path = str_replace("\\", DIRECTORY_SEPARATOR, $path);
 
 	ob_end_clean(); // Buffer löschen – keine Ausgabe darf ins ZIP!
-	
+
 	createzipfile($data, $path, $fileName);
 	return;
 }
@@ -248,14 +258,15 @@ $searchFields .= '<table style="width: 100%">
        <col span="1" style="width: 30%;" />
        <col span="1" style="width: 15%;" />
        <col span="1" style="width: 15%;" />
+	   <col span="1" style="width: 15%;" />
+       <col span="1" style="width: 10%;" />
        <col span="1" style="width: 15%;" />
-       <col span="1" style="width: 25%;" />
     </colgroup><tr><td>';
 
 if ($search) {
-	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()" >';
+	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
 } else {
-	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" >';
+	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
 }
 
 $searchFields .= '</td><td>';
@@ -293,15 +304,21 @@ if ($nurKategorienAnzeigen == true) {
 	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
 }
 
+$searchFields .= '<td style="white-space: nowrap;"><div style="display: flex; align-items: center; gap: 6px; padding-top: 25px;">';
+$searchFields .= '<label style="margin-right: 10px;">Zeilen pro Seite:</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 40px;" value="' . $posts_per_page . '" onblur="elementsPerPageChamge(this.name, this.value)"/>';
+$searchFields .= '</div></td>';
+
 $searchFields .= '<td>';
-$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onZipFileCreationClick()">Zip Datei erstellen</button>';
+$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onZipFileCreationClick()">Download ZIP</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
+$searchFields .= '</td>';
 
 $searchFields .= '<td>';
 $searchFields .= '<div class="justify-right"><button style="float:right" onclick="onExcelExportclick()">Excel export</button>';
 $searchFields .= '<input type="hidden" name="zipfilename" id="zipfilename"/>';
 $searchFields .= '<input type="hidden" name="createzipFile" id="createzipFile"/>';
+$searchFields .= '</td>';
 $searchFields .= '</div></td></tr></table></div>';
 $searchFields .= '</form>';
 
@@ -320,7 +337,8 @@ $parameters = array(
 	"custom_fields_cnt" => $custom_fields_cnt,
 	"allcategories" => $allcategories,
 	"tag_slug" => $tag_slug,
-	"settings" => $s
+	"settings" => $s,
+	"nurKategorienAnzeigen" => $nurKategorienAnzeigen
 );
 
 $data = queryData($parameters);
@@ -363,9 +381,9 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 						if ($element == "Ja") {
 							$catValue = "on";
 						}
-						$category = arrayFindObjectElement($allcategories, "term_id", $secondKey);
+						$categoryTerm = arrayFindObjectElement($allcategories, "term_id", $secondKey);
 
-						addCategoryField($row, $file_id, $category, $catValue, $checkboxArray);
+						addCategoryField($row, $file_id, $categoryTerm, $catValue, $checkboxArray);
 					}
 				} else {
 					$element = $dataRowArray[$dataKey];
@@ -423,16 +441,29 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 	$paginationQuery->max_num_pages = $maxpages;
 	$pagination = SharedFilesPublicPagination::getPagination($pagination_active, $paginationQuery, 'default');
 
-	$searchtest = "abc";
-	if ($search):
-		$pagination = preg_replace('/(href=\")(.+)(\")/', '${1}${2}&searchField=' . $searchtest . '${3}', $pagination);
+	$pargs = "";
+	if ($search) {
+		$pargs .= '&searchField=' . $search;
+	}
+	if ($category) {
+		$pargs .= '&sf_category=' . $category;
+	}
+	if ($nurKategorienAnzeigen) {
+		$pargs .= '&nurKategorienAnzeigen=on';
+	}
+	if ($posts_per_page) {
+		$pargs .= '&elementsPerPage=' . $posts_per_page;
+	}
+
+	if ($pargs):
+		$pagination = preg_replace('/(href=\")(.+)(\")/', '${1}${2}' . $pargs . '${3}', $pagination);
 	endif;
 
 } else {
 	$table .= "<p>Keine Daten gefunden</p>";
 }
 
-// error_log("searchFields: " . print_r($searchFields, true));
+//error_log("pagination: " . print_r($pagination, true));
 
 // error_log("tableRows: " . print_r($tableRows, true));
 
@@ -493,6 +524,12 @@ add_action('wp_footer', 'add_onload');
 
 	// console.log("InputJS" + JSON.stringify(inputArrayJs));
 	// console.log("InputJS", inputArrayJs);
+
+	function elementsPerPageChamge() {
+		var form = document.getElementById('the-redirect-form');
+		console.log("elementsPerPageChamge before click", form.action);
+		form.submit();
+	}
 
 	function inputOnChange(name, data) {
 		this.handleInputOnChange(name, data, window.inputArrayJs, window.inputArrayJsOriginal, "modified-input");
