@@ -48,7 +48,7 @@ limit {$limit} offset {$offset}";
 	$query .= "\n" . $pageparams;
 
 
-	//  error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
+	// error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
 	$wpdb = $parameters["wpdb"];
 	$queryCountResult = $wpdb->get_results($queryCount);
 	$total = array_column($queryCountResult, 'total')[0];

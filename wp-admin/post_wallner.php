@@ -132,13 +132,14 @@ TODOs
 * Excel Export Button rechtsbündig
 * Tabelle mit Scrollbar, minimale Spaltenbreiten
 * Checkbox: "Nur Kategorien bearbeiten": Disabled, falls Änderungen existieren, Rein Frontend
-* Zip-File download der Daten für eine Kategorie, max 30 Lieder (ca. 20-30MB)
+* Zip-File download der Daten für eine Kategorie, max 30 Lieder (ca. 20-30MB) // Fertig
 	* Speichergröße beschränken???
 	* Nur die aktuelle Seite
 	* Alle Seiten in einzelne Files
-
 * PAGINATION:
-	* Alle Parameter mitsenden (Search, Kategorie, Nur Kategorien bearbeiten, Zeile pro Seite)
+	* Alle Parameter mitsenden (Search, Kategorie, Nur Kategorien bearbeiten, Zeile pro Seite) --> Fertig
+* Alle Aktionsbuttons bei Änderungen disablen -- Fertig
+
 	
 * Verwerfen Button: Seite neu laden
 * Anzahl der Seiten im Frontend einstellbar

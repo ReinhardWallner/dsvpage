@@ -309,13 +309,13 @@ $searchFields .= '<label style="margin-right: 10px;">Zeilen pro Seite:</label><i
 $searchFields .= '</div></td>';
 
 $searchFields .= '<td>';
-$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onZipFileCreationClick()">Download ZIP</button>';
+$searchFields .= '<div class="justify-right"><button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">Download ZIP</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
 $searchFields .= '</td>';
 
 $searchFields .= '<td>';
-$searchFields .= '<div class="justify-right"><button style="float:right" onclick="onExcelExportclick()">Excel export</button>';
+$searchFields .= '<div class="justify-right"><button name="excepExportBtn" style="float:right" onclick="onExcelExportclick()">Excel export</button>';
 $searchFields .= '<input type="hidden" name="zipfilename" id="zipfilename"/>';
 $searchFields .= '<input type="hidden" name="createzipFile" id="createzipFile"/>';
 $searchFields .= '</td>';
@@ -463,11 +463,11 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 	$table .= "<p>Keine Daten gefunden</p>";
 }
 
-//error_log("pagination: " . print_r($pagination, true));
+// error_log("pagination: " . print_r($pagination, true));
 
 // error_log("tableRows: " . print_r($tableRows, true));
 
-error_log("table: " . print_r($table, true));
+// error_log("table: " . print_r($table, true));
 // error_log("pagination: " . print_r($pagination, true));
 echo $searchFields . $table . $pagination;
 
@@ -629,10 +629,25 @@ add_action('wp_footer', 'add_onload');
 		let categoryDropdowm = document.getElementsByName("sf_category");
 		if (categoryDropdowm.length > 0) {
 			categoryDropdowm[0].disabled = changesExists == true;
+			categoryDropdowm[0]["aria-disabled"] = changesExists == true;
 		}
 		let nurKategorienAnzeigen = document.getElementsByName("nurKategorienAnzeigen");
 		if (nurKategorienAnzeigen.length > 0) {
 			nurKategorienAnzeigen[0].disabled = changesExists == true;
+		}
+		let elementsPerPage = document.getElementsByName("elementsPerPage");
+		if (elementsPerPage.length > 0) {
+			elementsPerPage[0].disabled = changesExists == true;
+		}
+
+		let downloadZipBtn = document.getElementsByName("downloadZipBtn");
+		if (downloadZipBtn.length > 0) {
+			downloadZipBtn[0].disabled = changesExists == true;
+		}
+
+		let excepExportBtn = document.getElementsByName("excepExportBtn");
+		if (excepExportBtn.length > 0) {
+			excepExportBtn[0].disabled = changesExists == true;
 		}
 
 		var pageNumbers = document.getElementsByClassName("page-numbers");
@@ -1081,6 +1096,20 @@ add_action('wp_footer', 'add_onload');
 		min-width: 150px;
 		box-sizing: border-box;
 	}
+
+	button:disabled {
+		cursor: not-allowed;
+		/* oder z.B. 'default', 'help', 'wait', etc. */
+		opacity: 0.6;
+		/* optional zur besseren Erkennbarkeit */
+	}
+
+	 select[aria-disabled="true"] {
+      pointer-events: none; /* verhindert Interaktion */
+      opacity: 0.5;
+      background-color: #eee;
+      cursor: not-allowed; /* beliebiger Cursor funktioniert nur in manchen browsern */
+    }
 </style>
 
 
