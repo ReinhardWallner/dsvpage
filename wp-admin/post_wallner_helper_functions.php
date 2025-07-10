@@ -19,12 +19,6 @@ function modifiedValuesCheckbox($value)
 	}
 }
 
-function getModifiedValuesArray($values)
-{
-	foreach ($values as $key => $value) {
-	}
-}
-
 function modifiedValuesArray($values)
 {
 	$modifiedValues = [];
@@ -79,6 +73,19 @@ function arrayFindObjectElement($objArray, $needleField, $needleValue)
 	}
 
 	return null;
+}
+
+function arrayFindObjectElementPerKeyContains($objArray, $needleValue)
+{
+	$result = array();
+	foreach ($objArray as $key => $value) {
+		if(str_contains($key, $needleValue)){
+			$str = str_replace($needleValue, "", $key);
+			$result[$str] = $value;
+		}
+	}
+
+	return $result;
 }
 
 function addSingleIdValuesToArray($vars, $key, &$array)

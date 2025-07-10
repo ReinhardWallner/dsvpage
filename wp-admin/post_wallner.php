@@ -24,13 +24,25 @@ $action = !empty($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action'])
  */
 global $post_type, $post_type_object, $post;
 
-
 if ($post) {
 	$post_type = $post->post_type;
 	$post_type_object = get_post_type_object($post_type);
 }
 
 $sendback_test = wp_get_referer();
+
+$params = arrayFindObjectElementPerKeyContains($_POST, "referer_parm_");
+$i = 0;
+foreach($params as $key => $value){
+	if($i == 0){
+		$sendback_test .= "?" . $key . "=" . $value;
+	}
+	else {
+		$sendback_test .= "&" . $key . "=" . $value;
+	}
+	$i++;
+}
+
 
 if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 	wp_die(__('A post type mismatch has been detected.'), __('Sorry, you are not allowed to edit this item.'), 400);
@@ -95,65 +107,37 @@ if (gettype($vars) == "array") {
 }
 
 /*TODOs:
+-----------------------------------------------------------------------------------
+* REFACTORINGs: 
+	* JS auslagern
+	* Nicht mehr verwendete Methoden wegwerfen
+
+
+-----------------------------------------------------------------------------------
 0. Umlaute, Sonderzeichen in allen Feldern prüfen
 
-2. Finden der geänderten Werte: 
-	a) einfach über die hidden inputs, VT: BE-gesteuert, NT: doppelt so viele Formulardaten
-	b) hidden input variable mit Liste der geänderten Daten: VT: Weniger Formularfelder und damit Daten, NT: FE-Lösung ist fehleranfälliger, falls JS fehlerhaft
-	c) optimal wäre es, die Formulardaten per ajax zu schicken (jquery)
-
-4. Paging + Sperren des pagings, wenn Änderungen
-5. Verwerfen Button (reload)
-6. Suche nach Text und Kategorien-Filterung
-
+Speichern löscht Filterkriterien
 
 BUGS:
 * Tags Umlaute werden nicht angezeigt
 * Admin Code verschieben in WPAdminSubfolder
 * Pfade relativ am Server setzen
 
+
+-----------------------------------------------------------------------------------
 6. Tests
 7. Doku, welche Files alles erstellt und angepasst werden müssen
 8. Integration
 
-PAGES angezeigt, pagination inaktiv ok
-
-TODO 20062025:
-* Suche erfolgreich auf template-Seite umgestellt
-* Paging parameter werden richtig gesendet
-* Suchtext wird korrekt geschickt und wieder befüllt
-* Direkte DB Abfrage funktioniert
-* Seitenanzahl und Elemente auf der Seite korrekt
-TODOs
-* Reihenfolge auf der Seite funktioniert NICHT! --> erledigt
-* Kategorien - Filterung --> Combobox --> erledigt
-* Excel Export der gesamten Liste --> Konzert --> Fertig
-
-* Excel Export Button rechtsbündig
-* Tabelle mit Scrollbar, minimale Spaltenbreiten
-* Checkbox: "Nur Kategorien bearbeiten": Disabled, falls Änderungen existieren, Rein Frontend
+-----------------------------------------------------------------------------------
+Weitere Features:
+* Verwerfen Button: Seite neu laden
 * Zip-File download der Daten für eine Kategorie, max 30 Lieder (ca. 20-30MB) // Fertig
 	* Speichergröße beschränken???
 	* Nur die aktuelle Seite
 	* Alle Seiten in einzelne Files
-* PAGINATION:
-	* Alle Parameter mitsenden (Search, Kategorie, Nur Kategorien bearbeiten, Zeile pro Seite) --> Fertig
-* Alle Aktionsbuttons bei Änderungen disablen -- Fertig
 
-	
-* Verwerfen Button: Seite neu laden
-* Anzahl der Seiten im Frontend einstellbar
-
-
-
-
-* REFACTORINGs: 
-	* JS auslagern
-	* Nicht mehr verwendete Methoden wegwerfen
-
-
-
-
+-----------------------------------------------------------------------------------
 * Weiteres Kategorienzuordnungsformular??? 
 	--> Auswahl einer Kategorie
 	--> Liedersuche, dann Klick um Hinzuzufügen

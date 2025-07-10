@@ -48,18 +48,12 @@ limit {$limit} offset {$offset}";
 	$query .= "\n" . $pageparams;
 
 
-	// error_log("editmeta SELECT COUNT: " . print_r($queryCount, true));
 	$wpdb = $parameters["wpdb"];
 	$queryCountResult = $wpdb->get_results($queryCount);
 	$total = array_column($queryCountResult, 'total')[0];
-	// error_log("editmeta queryCountResult: " . print_r($queryCountResult, true));
-	//error_log("editmeta queryCountResult 2: " . print_r($total, true));
 
-	// error_log("editmeta SELECT STATEMENT: " . print_r($query, true));
 	$queryResult = $wpdb->get_results($query);
-	//error_log("editmeta queryResult: " . print_r($queryResult, true));
 	$ids = array_column($queryResult, 'id');
-	// error_log("editmeta queryResult: " . print_r($ids, true));
 
 
 	$data = array();
@@ -87,7 +81,6 @@ limit {$limit} offset {$offset}";
 
 	// Tags Header
 	array_push($headRow, "Tags");
-	// $keys["tags"] = "Tags";
 	array_push($keys, "tags");
 
 	// Categories Header
@@ -97,12 +90,11 @@ limit {$limit} offset {$offset}";
 		array_push($headRowKat, sanitize_title($category->slug));
 		array_push($keys, array("category" => $category->term_id));
 	}
-	// array_push($data, $headRow);
+
 	$data["headrow"] = $headRow;
 	$data["headrowKat"] = $headRowKat;
 	$data["keys"] = $keys;
 
-	// error_log("allcategories: " . print_r($allcategories, true));
 	if ($total > 0) {
 		$args = array(
 			'post_type' => 'shared_file',
@@ -115,11 +107,10 @@ limit {$limit} offset {$offset}";
 			while ($the_query_terms->have_posts()):
 				$the_query_terms->the_post();
 				$file_id = intval(get_the_id());
+
 				$row = array();
-				// array_push($row, $file_id);
 				$row["file_id"] = $file_id;
 				$title = get_the_title();
-				// array_push($row, $title);
 				$row["title"] = $title;
 
 				// Custom fields
@@ -129,7 +120,6 @@ limit {$limit} offset {$offset}";
 					$desc = str_replace('<p>', '', $desc);
 					$desc = str_replace('</p>', '', $desc);
 				}
-				// array_push($row, $desc);
 				$row["description"] = $desc;
 
 				$row["filename"] = $c["_sf_filename"][0];
@@ -142,9 +132,7 @@ limit {$limit} offset {$offset}";
 							$val = sanitize_text_field($c['_sf_file_upload_cf_' . $n][0]);
 						}
 					}
-					// array_push($row, $val);
 					$row["custom_field"][$n] = $val;
-					// error_log("custom_field: " . $n . ", " . $val . print_r($row, true));
 				}
 
 				// Tags
@@ -164,7 +152,6 @@ limit {$limit} offset {$offset}";
 				// Categories
 				if (is_array($allcategories)) {
 					$categories = get_the_terms($file_id, 'shared-file-category');
-					// error_log("categories: for file id " . $file_id . ", " . print_r($categories, true));
 
 					foreach ($allcategories as $category) {
 						$catName = sanitize_title($category->name);
@@ -186,12 +173,10 @@ limit {$limit} offset {$offset}";
 
 						$row["category"][$term_id] = $catValue;
 						array_push($keys, array("category" => $term_id));
-						// error_log("    Category: for fileid " . $file_id . ", " . $catName . ": " . print_r($catValue, true));
 					}
 
 				}
 
-				// array_push($data, $row);
 				$array_index = array_search($file_id, $ids);
 				$data[$array_index] = $row;
 			?>

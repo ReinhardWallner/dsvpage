@@ -4,9 +4,8 @@ function createzipfile($data, $path, $fileName)
 {
 	$outerArrayKeys = array_keys(($data));
 
+	// Checking ZIP extension is available
 	if (extension_loaded('zip')) {
-		// Checking ZIP extension is available
-
 		$zip = new ZipArchive(); // Load zip library
 
 		$zip_name = $fileName;
@@ -20,7 +19,6 @@ function createzipfile($data, $path, $fileName)
 			if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
 				$dataRowArray = $data[$outerKey];
 				$fullPath = realpath($path . DIRECTORY_SEPARATOR . $dataRowArray["filename"]);
-				// error_log("    element fullPath " . print_r($fullPath, true));
 				if ($fullPath && file_exists($fullPath)) {
 					$zip->addFile($fullPath, basename($dataRowArray["filename"]));
 				} else {
