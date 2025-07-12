@@ -8,11 +8,16 @@
  * @since Hestia 1.0
  */
 
-// start attention: This code has before get_header section!!!
-include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_exceldownload.php";
-include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_query_data.php";
-include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_helper_functions.php";
-include "C:\\xampp\\htdocs\\dsvpage\\wp-admin\\post_wallner_zipfilecreation.php";
+ $homepath = get_home_path();
+ $homepath = str_replace("/", DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, $homepath);
+ $sharedfilefolder = $homepath . "wp-admin" . DIRECTORY_SEPARATOR  . "shared_files_extensions" . DIRECTORY_SEPARATOR ;
+ 
+ 
+include  $sharedfilefolder . "post_wallner_exceldownload.php";
+include  $sharedfilefolder . "post_wallner_query_data.php";
+include  $sharedfilefolder . "post_wallner_helper_functions.php";
+include  $sharedfilefolder . "post_wallner_zipfilecreation.php";
+ // start attention: This code has before get_header section!!!
 
 $posts_per_page = 3;
 $paged = 1;
@@ -90,7 +95,7 @@ if ($excel_export == true) {
 	);
 
 	$data = queryData($parameters);
-	downloadExcelData($data, $fileName);
+	downloadExcelData($data, $fileName, $nurKategorienAnzeigen);
 	return;
 }
 
@@ -105,8 +110,10 @@ if ($zip_file_creation) {
 	if (isset($_POST['zipfilename'])) {
 		$fileName = $_POST["zipfilename"] . ".zip";
 	}
-	//TODO: Dynamic path
-	$path = "C:\\xampp\\htdocs\\dsvpage\\wp-content\\uploads\\shared-files";
+
+	$uldir = wp_upload_dir();
+	$path = str_replace("/", DIRECTORY_SEPARATOR, $uldir["basedir"]);
+	$path = str_replace("\\", DIRECTORY_SEPARATOR, $path) . DIRECTORY_SEPARATOR . "shared-files";
 
 	$parameters = array(
 		"posts_per_page" => $posts_per_page,
@@ -246,12 +253,14 @@ function addCategoryField(&$table, $file_id, &$category, $catValue, &$checkboxAr
 
 
 <?php
+$home = home_url( $wp->request );
+
 // ------------------------------------------------------------------------------------------------------------------------
 // Form Suche start
 $searchFields = '<form
    id="the-redirect-form" 
    method="post" 
-   action="http://localhost:8081/dsvpage/test-sharedfiles-edit" 
+   action="' . $home . '" 
    enctype="multipart/form-data">';
 
 // Tabellenspalten
@@ -328,7 +337,8 @@ $searchFields .= '</form>';
 
 // ------------------------------------------------------------------------------------------------------------------------
 // Form mit Daten
-$table = '<form method="post" name="dataForm" id="dataForm" enctype="application/x-www-form-urlencoded" action="http://localhost:8081/dsvpage/wp-admin/post_wallner.php">';
+$adminUrl = get_admin_url();
+$table = '<form method="post" name="dataForm" id="dataForm" enctype="application/x-www-form-urlencoded" action="' . $adminUrl . 'post_wallner.php">';
 $table .= '<div class="table-scroll-wrapper"><table name="dataTable" style="margin: 10px;">';
 
 $pagination = "";

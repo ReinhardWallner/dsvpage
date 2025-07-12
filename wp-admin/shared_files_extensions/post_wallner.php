@@ -116,10 +116,10 @@ if (gettype($vars) == "array") {
 -----------------------------------------------------------------------------------
 0. Umlaute, Sonderzeichen in allen Feldern prüfen
 
-Speichern löscht Filterkriterien
+
+Template-Seite Code auslagern in Hilfsfunktionen
 
 BUGS:
-* Tags Umlaute werden nicht angezeigt
 * Admin Code verschieben in WPAdminSubfolder
 * Pfade relativ am Server setzen
 
