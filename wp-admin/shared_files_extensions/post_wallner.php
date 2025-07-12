@@ -114,14 +114,9 @@ if (gettype($vars) == "array") {
 
 
 -----------------------------------------------------------------------------------
-0. Umlaute, Sonderzeichen in allen Feldern prüfen
-
 
 Template-Seite Code auslagern in Hilfsfunktionen
 
-BUGS:
-* Admin Code verschieben in WPAdminSubfolder
-* Pfade relativ am Server setzen
 
 
 -----------------------------------------------------------------------------------

@@ -17,6 +17,7 @@ include  $sharedfilefolder . "post_wallner_exceldownload.php";
 include  $sharedfilefolder . "post_wallner_query_data.php";
 include  $sharedfilefolder . "post_wallner_helper_functions.php";
 include  $sharedfilefolder . "post_wallner_zipfilecreation.php";
+include  $sharedfilefolder . "post_wallner_helper_functions_controls.php";
  // start attention: This code has before get_header section!!!
 
 $posts_per_page = 3;
@@ -154,91 +155,6 @@ do_action('hestia_before_single_page_wrapper');
 
 $inputArray = array();
 $checkboxArray = array();
-
-function getInputField($file_id, $cf_id, $name, $value, &$inputArray, $hidden = false)
-{
-	$obj = new stdClass();
-	$obj->file_id = $file_id;
-	if ($cf_id != null)
-		$obj->cf_id = $cf_id;
-	$obj->value = $value;
-	array_push($inputArray, [$name => $obj]);
-
-	if ($hidden) {
-		if ($value)
-			return '<input type="hidden" name="' . $name . '" id="' . $name . '" value="' . $value . '" title="' . $value . '"/>';
-		else
-			return '<input type="hidden" name="' . $name . '" id="' . $name . '"/>';
-	} else {
-		if ($value)
-			return '<input type="text" name="' . $name . '" id="' . $name . '" value="' . $value . '" title="' . $value . '" onchange="inputOnChange(this.name, this.value)" />';
-		else
-			return '<input type="text" name="' . $name . '" id="' . $name . '" onchange="inputOnChange(this.name, this.value.value)" />';
-	}
-}
-
-function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $hidden = false)
-{
-	$obj = new stdClass();
-	$obj->file_id = $file_id;
-	$obj->cat_name = $cat_name;
-	$obj->value = $value;
-	array_push($checkboxArray, [$name => $obj]);
-
-	if ($hidden) {
-		if ($value)
-			return '<input type="hidden" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" />';
-		else
-			return '<input type="hidden" name="' . $name . '" id="' . $name . '" value="' . $value . '" "/>';
-	} else {
-		if ($value)
-			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" onchange="checkboxOnChange(this.name, this.value)"/>';
-		else
-			return '<input type="checkbox" name="' . $name . '" id="' . $name . '" value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
-	}
-
-}
-
-function addTitleField(&$table, $file_id, $title, &$inputArray)
-{
-	$table .= '<td>';
-	$table .= getInputField($file_id, null, '_sf_file_title_' . $file_id, $title, $inputArray);
-	$table .= getInputField($file_id, null, '_sf_file_title_origin_' . $file_id, $title, $inputArray, true);
-	$table .= '</td>';
-}
-
-function addDescriptionField(&$table, $file_id, $desc, &$inputArray)
-{
-	$table .= '<td>';
-	$table .= getInputField($file_id, null, '_sf_file_description_' . $file_id, $desc, $inputArray);
-	$table .= getInputField($file_id, null, '_sf_file_description_origin_' . $file_id, $desc, $inputArray, true);
-	$table .= '</td>';
-}
-
-function addCustomFieldField(&$table, $file_id, $n, $val, &$inputArray): void
-{
-	$table .= '<td>';
-	$table .= getInputField($file_id, $n, '_sf_file_cf_' . $file_id . '_' . $n, $val, $inputArray);
-	$table .= getInputField($file_id, $n, '_sf_file_cf_origin_' . $file_id . '_' . $n, $val, $inputArray, true);
-	$table .= '</td>';
-}
-
-function addTagsField(&$table, $file_id, $tagValue, &$inputArray): void
-{
-	$table .= '<td>';
-	$table .= getInputField($file_id, null, '_sf_file_tags_' . $file_id, $tagValue, $inputArray);
-	$table .= getInputField($file_id, null, '_sf_file_tags_origin_' . $file_id, $tagValue, $inputArray, true);
-	$table .= '</td>';
-}
-
-function addCategoryField(&$table, $file_id, &$category, $catValue, &$checkboxArray): void
-{
-	// error_log("addCategoryField " . $file_id . ": " . print_r($category, true) . ", catvalue " . $catValue . ", inputArr " . print_r($inputArray, true));
-	$table .= '<td>';
-	$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray);
-	$table .= getCheckboxField($file_id, $category->name, '_sf_file_cat_origin_' . $file_id . '_' . $category->term_id, $catValue, $checkboxArray, true);
-	$table .= '</td>';
-}
 
 ?>
 
@@ -526,16 +442,12 @@ add_action('wp_footer', 'add_onload');
 	}
 
 	document.getElementById("dataForm").addEventListener("submit", function(e) {
-		// console.log("SUBMIT e", e);
-		// e.preventDefault();
-
 		const form = e.target;
 		
 		appendHiddenInput("searchField", form);
 		appendHiddenInput("sf_category", form);
 		appendHiddenInput("elementsPerPage", form);
 		appendHiddenInput("nurKategorienAnzeigen", form);
-		console.log("SUBMIT form at the end", form);
 		});
 
 	function appendHiddenInput(name, form){
@@ -581,16 +493,16 @@ add_action('wp_footer', 'add_onload');
 				foundElement[name].value = data;
 				let foundElementOrig = arrayJsOriginal.find(el => { if (el[name] !== undefined) return el; })
 				if (foundElementOrig && foundElementOrig[name].value != foundElement[name].value) {
-					console.log("DIFFERENT");
+					// console.log("DIFFERENT");
 					this.markInputObject(name, false, modifiedClassName)
 				} else {
-					console.log("EQUALS")
+					// console.log("EQUALS")
 					this.markInputObject(name, true, modifiedClassName)
 				}
 			}
 		}
 
-		console.log("modifiedElement", arrayJs);
+		// console.log("modifiedElement", arrayJs);
 	}
 
 	function computeAnyChangedData() {
@@ -602,7 +514,7 @@ add_action('wp_footer', 'add_onload');
 			let foundElementOrig = inputArrayJsOriginal.find(el => { if (el[name] !== undefined) return el; })
 			if (foundElementOrig[name].value != element[name].value) {
 				changesExists = true;
-				console.log("CHANGE:", element);
+				// console.log("CHANGE:", element);
 				// break;
 				changedData.push({
 					file_id: element[name].file_id,
@@ -665,7 +577,7 @@ add_action('wp_footer', 'add_onload');
 		var pageNumbers = document.getElementsByClassName("page-numbers");
 		if (pageNumbers) {
 			for (let element of pageNumbers) {
-				console.log(element);
+				// console.log(element);
 				if (changesExists == true) {
 					element.classList.add('disabled');
 				}
@@ -676,7 +588,7 @@ add_action('wp_footer', 'add_onload');
 		}
 
 
-		console.log("MODIFIED DATA changesExists, changedData, page_numbers", changesExists, changedData, pageNumbers);
+		// console.log("MODIFIED DATA changesExists, changedData, page_numbers", changesExists, changedData, pageNumbers);
 	}
 
 	function markInputObject(name, equals, modifiedClassName) {
@@ -704,11 +616,11 @@ add_action('wp_footer', 'add_onload');
 		if (newPaged) {
 			paged = newPaged;
 			pagedToSend = newPaged;
-			console.log("onInputSearchText new Page", newPaged)
+			// console.log("onInputSearchText new Page", newPaged)
 		}
 
 		var searchText = getInputValue("searchField");
-		console.log("onInputSearchText PAGED VARIABLE??? searchText, paged, posts_per_page, pagedToSend, custom_fields_cnt ", searchText, paged, posts_per_page, pagedToSend, custom_fields_cnt);
+		// console.log("onInputSearchText PAGED VARIABLE??? searchText, paged, posts_per_page, pagedToSend, custom_fields_cnt ", searchText, paged, posts_per_page, pagedToSend, custom_fields_cnt);
 
 		if (searchText != null && searchText != undefined) {
 			var cfCount = getInputValue("custom_fields_cnt");
