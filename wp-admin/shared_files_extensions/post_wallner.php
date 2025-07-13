@@ -107,17 +107,8 @@ if (gettype($vars) == "array") {
 }
 
 /*TODOs:
------------------------------------------------------------------------------------
-* REFACTORINGs: 
-	* JS auslagern
-	* Nicht mehr verwendete Methoden wegwerfen
-
-
------------------------------------------------------------------------------------
-
-Template-Seite Code auslagern in Hilfsfunktionen
-
-
+* Leser/Autoren
+* Nicht berechtigte User
 
 -----------------------------------------------------------------------------------
 6. Tests

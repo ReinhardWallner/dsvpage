@@ -8,6 +8,20 @@
  * @since Hestia 1.0
  */
 
+if(!is_user_logged_in()){
+	$pagename = get_query_var('pagename');
+	error_log("Nicht berechtigt! " . print_r($pagename, true));
+	// TODO REDIRECT
+	return;
+}
+
+$user = wp_get_current_user();
+$isReadonlyUser = false;
+if ( !in_array( 'administrator', (array) $user->roles ) && !in_array( 'editor', (array) $user->roles ) && !in_array( 'author', (array) $user->roles ) )
+{	
+	$isReadonlyUser = true;
+}
+
  $homepath = get_home_path();
  $homepath = str_replace("/", DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, $homepath);
  $sharedfilefolder = $homepath . "wp-admin" . DIRECTORY_SEPARATOR  . "shared_files_extensions" . DIRECTORY_SEPARATOR ;
@@ -224,10 +238,15 @@ $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>
 $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td>';
+$nurKategorienText = "Nur Kategorien bearbeiten";
+
+if ($isReadonlyUser == true){
+	$nurKategorienText = "Nur Kategorien anzeigen";
+}
 if ($nurKategorienAnzeigen == true) {
-	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
+	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>' . $nurKategorienText . '</td>';
 } else {
-	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>Nur Kategorien bearbeiten</td>';
+	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>' . $nurKategorienText . '</td>';
 }
 
 // Zeilen pro Seite
@@ -307,7 +326,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 					$element = $dataRowArray[$firstKey][$secondKey];
 
 					if ($firstKey == "custom_field" && $nurKategorienAnzeigen == false) {
-						addCustomFieldField($row, $file_id, $secondKey, $element, $inputArray);
+						addCustomFieldField($row, $file_id, $secondKey, $element, $inputArray, $isReadonlyUser);
 					} else if ($firstKey == "category") {
 						$catValue = "";
 						if ($element == "Ja") {
@@ -315,7 +334,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 						}
 						$categoryTerm = arrayFindObjectElement($allcategories, "term_id", $secondKey);
 
-						addCategoryField($row, $file_id, $categoryTerm, $catValue, $checkboxArray);
+						addCategoryField($row, $file_id, $categoryTerm, $catValue, $checkboxArray, $isReadonlyUser);
 					}
 				} else {
 					$element = $dataRowArray[$dataKey];
@@ -326,11 +345,11 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 						$row = "";
 						$row .= "<tr><td>" . $file_id . "</td>";
 					} else if ($dataKey == "title") {
-						addTitleField($row, $file_id, $element, $inputArray);
+						addTitleField($row, $file_id, $element, $inputArray, $isReadonlyUser);
 					} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
-						addDescriptionField($row, $file_id, $element, $inputArray);
+						addDescriptionField($row, $file_id, $element, $inputArray, $isReadonlyUser);
 					} else if ($dataKey == "tags" && $nurKategorienAnzeigen == false) {
-						addTagsField($row, $file_id, $element, $inputArray);
+						addTagsField($row, $file_id, $element, $inputArray, $isReadonlyUser);
 					}
 				}
 			}
@@ -349,7 +368,11 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 
 	// Submit Button
 	$table .= "</table></div>";
-	$table .= '<input type="submit" name="submit" disabled="true" value="Speichern"></input>';
+	
+	if($isReadonlyUser == false) {
+		$table .= '<input type="submit" name="submit" disabled="true" value="Speichern"></input>';
+	}
+
 	$table .= '</form>';
 
 
