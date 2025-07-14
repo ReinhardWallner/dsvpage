@@ -19,7 +19,7 @@ function saveDescriptions($desfiltered)
 	foreach ($desfiltered as $key => $value) {
 		$id = intval($key);
 		$res = update_post_meta($id, '_sf_description', $value["value"]);
-		 error_log("update RESULT " . print_r($res, true));
+		//  error_log("update RESULT " . print_r($res, true));
 	}
 }
 
@@ -34,6 +34,7 @@ function saveCustomFields($customfield_values)
 
 function saveCategories($category_valuesfiltered)
 {
+	// error_log("saveCategories input ". print_r($category_valuesfiltered, true));
 	foreach ($category_valuesfiltered as $file_id => $value) {
 		$termsToRemove = [];
 		$termIdsAdded = [];
@@ -46,11 +47,13 @@ function saveCategories($category_valuesfiltered)
 			}
 		}
 
+		// error_log("saveCategories termsToRemove ". print_r($termsToRemove, true));
+		// error_log("saveCategories termIdsAdded ". print_r($termIdsAdded, true));
 		if (count($termsToRemove) !== 0) {
 			$setKategoriesResult = wp_remove_object_terms($file_id, $termsToRemove, 'shared-file-category');
 		}
 		if (count($termIdsAdded) !== 0) {
-			$setKategoriesResult = wp_set_post_terms($file_id, $termIdsAdded, 'shared-file-category');
+			$setKategoriesResult = wp_set_post_terms($file_id, $termIdsAdded, 'shared-file-category', true);
 		}
 	}
 }

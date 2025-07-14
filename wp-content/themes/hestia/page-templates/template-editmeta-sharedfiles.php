@@ -25,13 +25,14 @@ if ( !in_array( 'administrator', (array) $user->roles ) && !in_array( 'editor', 
  $homepath = get_home_path();
  $homepath = str_replace("/", DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, $homepath);
  $sharedfilefolder = $homepath . "wp-admin" . DIRECTORY_SEPARATOR  . "shared_files_extensions" . DIRECTORY_SEPARATOR ;
- 
- 
-include  $sharedfilefolder . "post_wallner_exceldownload.php";
-include  $sharedfilefolder . "post_wallner_query_data.php";
-include  $sharedfilefolder . "post_wallner_helper_functions.php";
-include  $sharedfilefolder . "post_wallner_zipfilecreation.php";
-include  $sharedfilefolder . "post_wallner_helper_functions_controls.php";
+
+
+include  $sharedfilefolder . "sharedfiles_exceldownload.php";
+include  $sharedfilefolder . "sharedfiles_querydata.php";
+include  $sharedfilefolder . "sharedfiles_helperfunctions.php";
+include  $sharedfilefolder . "sharedfiles_zipfiledownload.php";
+include  $sharedfilefolder . "sharedfiles_controlhelpers.php";
+
  // start attention: This code has before get_header section!!!
 
 $posts_per_page = 3;
@@ -71,9 +72,9 @@ if (isset($_POST['sf_category'])) {
 	$category = $_GET["sf_category"];
 }
 
-if (isset($_POST['elementsPerPage'])) {
+if (isset($_POST['elementsPerPage']) && $_POST['elementsPerPage'] != null && is_int($_POST['elementsPerPage'])) {
 	$posts_per_page = $_POST["elementsPerPage"];
-} else if (isset($_GET['elementsPerPage'])) {
+} else if (isset($_GET['elementsPerPage']) && $_GET['elementsPerPage'] != null && is_int($_GET['elementsPerPage'])) {
 	$posts_per_page = $_GET["elementsPerPage"];
 }
 
@@ -273,7 +274,9 @@ $searchFields .= '</form>';
 // ------------------------------------------------------------------------------------------------------------------------
 // Form mit Daten
 $adminUrl = get_admin_url();
-$table = '<form method="post" name="dataForm" id="dataForm" enctype="application/x-www-form-urlencoded" action="' . $adminUrl . 'post_wallner.php">';
+$postUrl = $adminUrl . 'shared_files_extensions/sharedfiles_post.php';
+
+$table = '<form method="post" name="dataForm" id="dataForm" enctype="application/x-www-form-urlencoded" action="' . $postUrl . '">';
 $table .= '<div class="table-scroll-wrapper"><table name="dataTable" style="margin: 10px;">';
 
 $pagination = "";
@@ -465,19 +468,27 @@ add_action('wp_footer', 'add_onload');
 	}
 
 	document.getElementById("dataForm").addEventListener("submit", function(e) {
+		// console.log("SUBMIT e", e);
+		// e.preventDefault();
+		
 		const form = e.target;
 		
 		appendHiddenInput("searchField", form);
 		appendHiddenInput("sf_category", form);
 		appendHiddenInput("elementsPerPage", form);
-		appendHiddenInput("nurKategorienAnzeigen", form);
+		appendHiddenInput("nurKategorienAnzeigen", form, "on");
 		});
 
-	function appendHiddenInput(name, form){
+	function appendHiddenInput(name, form, ischeckbox){
 		const hiddenInput = document.createElement("input");
 		hiddenInput.type = "hidden";
 		hiddenInput.name = "referer_parm_" + name;
-		hiddenInput.value = getInputValue(name);;
+		let value = getInputValue(name);
+		if(ischeckbox){
+			value = getInputValueCheckbox(name);
+		}
+		hiddenInput.value = value;
+		
 		form.appendChild(hiddenInput);
 	}
 
@@ -491,19 +502,21 @@ add_action('wp_footer', 'add_onload');
 
 
 	function inputOnChange(name, data) {
-		this.handleInputOnChange(name, data, window.inputArrayJs, window.inputArrayJsOriginal, "modified-input");
+		this.handleInputOnChange(name, data, window.inputArrayJs, window.inputArrayJsOriginal, "modified-input", "value");
 		this.computeAnyChangedData();
 	}
 	function checkboxOnChange(name, data) {
-		this.handleInputOnChange(name, data, window.checkboxArrayJs, window.checkboxArrayJsOriginal, "modified-checkbox")
+		this.handleInputOnChange(name, data, window.checkboxArrayJs, window.checkboxArrayJsOriginal, "modified-checkbox", "checked")
 		var el = document.getElementById(name);
-		if (data == true)
+		if (data == true){
 			el.value = "on";
-
+			el.checked = true;
+		}
+		
 		this.computeAnyChangedData();
 	}
 
-	function handleInputOnChange(name, data, arrayJs, arrayJsOriginal, modifiedClassName) {
+	function handleInputOnChange(name, data, arrayJs, arrayJsOriginal, modifiedClassName, field) {
 		var el = document.getElementById(name);
 
 		if (arrayJs) {
@@ -515,7 +528,8 @@ add_action('wp_footer', 'add_onload');
 			if (foundElement) {
 				foundElement[name].value = data;
 				let foundElementOrig = arrayJsOriginal.find(el => { if (el[name] !== undefined) return el; })
-				if (foundElementOrig && foundElementOrig[name].value != foundElement[name].value) {
+				
+				if (foundElementOrig && foundElementOrig[name][field] != foundElement[name][field]) {
 					// console.log("DIFFERENT");
 					this.markInputObject(name, false, modifiedClassName)
 				} else {
@@ -552,7 +566,9 @@ add_action('wp_footer', 'add_onload');
 			let element = window.checkboxArrayJs[i];
 			let name = Object.keys(element)[0];
 			let foundElementOrig = window.checkboxArrayJsOriginal.find(el => { if (el[name] !== undefined) return el; })
-			if (foundElementOrig[name].value != element[name].value) {
+
+			if ((foundElementOrig[name].value == "on" && element[name].value == false) ||
+				(foundElementOrig[name].value != "on" && element[name].value == true)) {
 				changesExists = true;
 				// break;
 				changedData.push({
@@ -629,6 +645,17 @@ add_action('wp_footer', 'add_onload');
 		var fields = document.getElementsByName(fieldName);
 		if (fields && fields.length == 1) {
 			return fields[0].value;
+		}
+
+		return null;
+	}
+
+	function getInputValueCheckbox(fieldName) {
+		var fields = document.getElementsByName(fieldName);
+		if (fields && fields.length == 1) {
+			if(fields[0].checked){
+				return "on";
+			}
 		}
 
 		return null;

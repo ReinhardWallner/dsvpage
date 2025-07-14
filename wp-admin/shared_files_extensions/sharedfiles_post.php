@@ -10,10 +10,10 @@
 
 /** WordPress Administration Bootstrap */
 // TODO: Ist diese Zeile NÖTIG???
-require_once __DIR__ . '/admin.php';
+require_once dirname(__DIR__) . '/admin.php';
 
-include "post_wallner_helper_functions.php";
-include "post_wallner_save.php";
+include "sharedfiles_helperfunctions.php";
+include "sharedfiles_post_savedetails.php";
 
 $action = !empty($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '';
 
@@ -43,6 +43,7 @@ foreach($params as $key => $value){
 	$i++;
 }
 
+// error_log("POST _POST " . print_r($_POST, true) . ", sendback_test url " . print_r($sendback_test, true));
 
 if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 	wp_die(__('A post type mismatch has been detected.'), __('Sorry, you are not allowed to edit this item.'), 400);

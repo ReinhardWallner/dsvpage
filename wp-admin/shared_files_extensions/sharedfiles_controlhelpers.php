@@ -1,5 +1,5 @@
 <?php
-function getInputField($file_id, $cf_id, $name, $value, &$inputArray, $isReadonlyUser, $hidden = false)
+function getInputField($file_id, $cf_id, $name, $value, &$inputArray, $hidden = false)
 {
 	$obj = new stdClass();
 	$obj->file_id = $file_id;
@@ -27,6 +27,11 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	$obj->file_id = $file_id;
 	$obj->cat_name = $cat_name;
 	$obj->value = $value;
+	if($value)
+		$obj->checked = true;
+	else
+		$obj->checked = false;
+	
 	array_push($checkboxArray, [$name => $obj]);
 
 	if ($hidden) {
@@ -37,13 +42,13 @@ function getCheckboxField($file_id, $cat_name, $name, $value, &$checkboxArray, $
 	} else {
 		if($isReadonlyUser){
 			if ($value)
-				return '<input type="checkbox" name="' . $name . '" id="' . $name . '" disabled checked value="' . $value . '" onchange="checkboxOnChange(this.name, this.value)"/>';
+				return '<input type="checkbox" name="' . $name . '" id="' . $name . '" disabled checked value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
 			else
 				return '<input type="checkbox" name="' . $name . '" id="' . $name . '" disabled value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
 		}
 		else{
 			if ($value)
-				return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" onchange="checkboxOnChange(this.name, this.value)"/>';
+				return '<input type="checkbox" name="' . $name . '" id="' . $name . '" checked value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
 			else
 				return '<input type="checkbox" name="' . $name . '" id="' . $name . '" value="' . $value . '" onchange="checkboxOnChange(this.name, this.checked)"/>';
 		}
