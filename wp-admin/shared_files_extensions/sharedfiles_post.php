@@ -111,9 +111,28 @@ if (gettype($vars) == "array") {
 * Leser/Autoren
 * Nicht berechtigte User
 
+* Texte in fremder Sprache
+	* TODO: Eintragen in share-files.pot
+	* Eintragen in loco-translate
+	Nur Kategorien bearbeiten Modify categories only
+	Nur Kategorien anzeigen Show only categories
+	Zeilen pro Seite Rows per page
+	Download ZIP Download ZIP
+	Excel Export Excel Export
+	Titel Title
+	Beschreibung Description
+	Speichern Save
+
+TODO 21072025:
+ASTRA mit Styling: Alle Funtionen testen
+Rows per page funktioniert z.b. nicht
+
+
 -----------------------------------------------------------------------------------
 6. Tests
 7. Doku, welche Files alles erstellt und angepasst werden müssen
+	Doku für Autoren
+	Doku für Leser
 8. Integration
 
 -----------------------------------------------------------------------------------

@@ -63,9 +63,9 @@ limit {$limit} offset {$offset}";
 	$headRowKat = array();
 	array_push($headRow, "Id");
 	array_push($headRowKat, "Id");
-	array_push($headRow, "Titel");
-	array_push($headRowKat, "Titel");
-	array_push($headRow, "Beschreibung");
+	array_push($headRow, esc_html__('Title', 'shared-files'));
+	array_push($headRowKat, esc_html__('Title', 'shared-files'));
+	array_push($headRow, esc_html__('Description', 'shared-files'));
 	$keys = array(0 => "file_id", 1 => "title", 2 => "description");
 
 	$custom_fields_cnt = $parameters["custom_fields_cnt"];
@@ -80,7 +80,7 @@ limit {$limit} offset {$offset}";
 	}
 
 	// Tags Header
-	array_push($headRow, "Tags");
+	array_push($headRow, esc_html__('Tags', 'shared-files'));
 	array_push($keys, "tags");
 
 	// Categories Header

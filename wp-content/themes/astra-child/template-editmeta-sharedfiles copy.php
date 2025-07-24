@@ -1,18 +1,23 @@
 <?php
 /**
- * Template Name: Template Shared Files Edit List
+ * Template Name: CPT Update
  *
  * The template for the full-width page.
  *
- * @package Hestia
- * @since Hestia 1.0
+ * @package Astra
+ * @since Astra 1.0
  */
 
+ 
 if(!is_user_logged_in()){
 	$pagename = get_query_var('pagename');
 	error_log("Nicht berechtigt! " . print_r($pagename, true));
 	// TODO REDIRECT
 	return;
+}
+
+if ( ! function_exists( 'get_home_path' ) ) {
+    require_once( ABSPATH . 'wp-admin/includes/file.php' );
 }
 
 $user = wp_get_current_user();
@@ -45,8 +50,8 @@ if (isset($s['tag_slug']) && $s['tag_slug']) {
 }
 
 
-// error_log("TEMPLATE START _POST " . print_r($_POST, return: true));
-// error_log("TEMPLATE START _GET " . print_r($_GET, true));
+error_log("TEMPLATE START _POST " . print_r($_POST, return: true));
+error_log("TEMPLATE START _GET " . print_r($_GET, true));
 
 if (isset($_GET['_page']) && $_GET['_page']) {
 	$paged = (int) $_GET['_page'];
@@ -163,15 +168,15 @@ if ($zip_file_creation) {
 
 // end attention: This code has before get_header section!!!
 
-// get_header();
+get_header();
 
 // /**
 //  * Don't display page header if header layout is set as classic blog.
 //  */
 // do_action('hestia_before_single_page_wrapper');
-hestia_no_content_get_header();
+// hestia_no_content_get_header();
 
-do_action( 'hestia_page_builder_blank_before_content' );
+// do_action( 'hestia_page_builder_blank_before_content' );
 
 ?>
 
@@ -217,9 +222,9 @@ $searchFields .= '<table style="width: 100%">
 
 // Suchfeld
 if ($search) {
-	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
+	$searchFields .= '<input type="text" shared-files-search-files-v2 name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
 } else {
-	$searchFields .= '<input type="text" shared-files-search-files-v2" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
+	$searchFields .= '<input type="text" shared-files-search-files-v2 name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
 }
 
 $searchFields .= '</td><td>';
@@ -254,13 +259,14 @@ if ($isReadonlyUser == true){
 	$nurKategorienText = esc_html__('Show only categories', 'shared-files');
 }
 if ($nurKategorienAnzeigen == true) {
-	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>' . $nurKategorienText . '</td>';
+	$searchFields .= '<td style="max-width: 250px;"><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></td>';
 } else {
-	$searchFields .= '<td><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/>' . $nurKategorienText . '</td>';
+	$searchFields .= '<td style="max-width: 250px;"><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></td>';
 }
 
+error_log("posts_per_page: " . print_r($posts_per_page,true));
 // Zeilen pro Seite
-$searchFields .= '<td style="white-space: nowrap;"><div style="display: flex; align-items: center; gap: 6px; padding-top: 25px;">';
+$searchFields .= '<td style="white-space: nowrap;"><div style="display: flex; align-items: center; gap: 6px; ">';
 $searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'shared-files') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 40px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
 $searchFields .= '</div></td>';
 
@@ -430,39 +436,18 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 }
 
 // Ausgabe der gesamten Seite
+echo '<div id="cpt-update-wrapper">';
 echo $searchFields . $table . $pagination;
+echo '</div>';
 
-do_action( 'hestia_page_builder_blank_after_content' );
+// error_log($searchFields . $table . $pagination);
 
-hestia_no_content_get_footer();
+// do_action( 'hestia_page_builder_blank_after_content' );
+
+// hestia_no_content_get_footer();
+get_footer();
 
 wp_reset_postdata();
-?>
-
-
-<?php
-/* Wordpress doesn't give you access to the <body> tag to add a call
- * to init_trailmap(). This is a workaround to dynamically add that tag.
- */
-function add_onload()
-{
-	?>
-
-	<script type="text/javascript">
-		document.getElementsByTagName('body')[0].onload = onloadInternally;
-
-		document.getElementById("the-redirect-form").addEventListener("submit", function (e) {
-			setTimeout(() => {
-				document.getElementById("doExcelExport").value = false;
-				document.getElementById("createzipFile").value = false;
-			}, 100); // kurz verzögern
-		});
-	</script>
-
-	<?php
-}
-
-add_action('wp_footer', 'add_onload');
 ?>
 
 <script>
@@ -470,7 +455,9 @@ add_action('wp_footer', 'add_onload');
 	 * Set Caret position in search field
 	 */
 	function onloadInternally() {
+		console.log("onloadInternally", document);
 		let searchfield = document.getElementsByName("searchField");
+		console.log("onloadInternally", searchfield)
 		if (searchfield && searchfield[0] && insertSearchText) {
 			searchfield[0].value = insertSearchText;
 			if (insertSearchText.length > 0) {
@@ -689,13 +676,21 @@ add_action('wp_footer', 'add_onload');
 			var cfCount = getInputValue("custom_fields_cnt");
 			if (!cfCount)
 				cfCount = 20;
-
-			document.getElementById("the-redirect-form").submit();
+				var searchText = getInputValue("searchField");
+		var elementsPerPage = getInputValue("elementsPerPage");
+				console.log("onInputSearchText form", document.getElementById("the-redirect-form"), searchText, elementsPerPage)
+			 document.getElementById("the-redirect-form").submit();
 		}
 	}
 
 	function elementsPerPageChange() {
 		var form = document.getElementById('the-redirect-form');
+		// var ele =document.getElementById("elementsPerPage")
+		// var ele =document.getElementById("elementsPerPage")
+		var searchText = getInputValue("searchField");
+		var elementsPerPage = getInputValue("elementsPerPage");
+		console.log("elementsPerPageChange form", form, searchText, elementsPerPage)
+
 		form.submit();
 	}
 	
@@ -795,6 +790,12 @@ add_action('wp_footer', 'add_onload');
 		box-sizing: border-box;
 	}
 
+	/** */
+	td {
+		vertical-align: middle;
+		padding: 6px 8px;
+  	}
+
 	button:disabled {
 		cursor: not-allowed;
 		/* oder z.B. 'default', 'help', 'wait', etc. */
@@ -817,7 +818,111 @@ add_action('wp_footer', 'add_onload');
 		cursor: not-allowed;
 		/* beliebiger Cursor funktioniert nur in manchen browsern */
 	}
+
+
+	form,
+.shared-files-pagination-improved {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* Klare Trennung mit Abstand */
+hr.clear {
+  margin: 2rem auto;
+  width: 80%;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+/* Pagination-Styling */
+.shared-files-pagination-improved {
+  text-align: center;
+}
+
+.shared-files-pagination-improved a,
+.shared-files-pagination-improved span {
+  display: inline-block;
+  margin: 0.25rem 0.4rem;
+  padding: 0.4rem 0.8rem;
+  text-decoration: none;
+  color: #005baa;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.shared-files-pagination-improved a:hover {
+  background: #e6f0fa;
+  border-color: #005baa;
+}
+
+.shared-files-pagination-improved .current {
+  font-weight: bold;
+  background: #005baa;
+  color: white;
+  border-color: #005baa;
+}	
+
+/** Border entfernen */
+#the-redirect-form,
+#the-redirect-form table,
+#the-redirect-form div,
+#the-redirect-form input,
+#the-redirect-form select,
+#the-redirect-form textarea {
+  border: none !important;
+  box-shadow: none !important; /* falls Schatten da sind */
+  outline: none !important; /* falls Fokusrahmen da sind */
+}
+
+#the-redirect-form td{
+	border-width: 0px !important;
+}
+
+/* Dein Wrapper: nimmt 100% Breite ein */
+#cpt-update-wrapper {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* Direkt darin: alle Elemente auf volle Breite */
+#cpt-update-wrapper > * {
+  display: block;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto 2rem auto;
+  box-sizing: border-box;
+}
+
+/* Formulare explizit */
+#cpt-update-wrapper form {
+  display: block;
+  width: 100% !important;
+}
+
+/* Pagination block auch dehnen */
+#cpt-update-wrapper .shared-files-pagination-improved {
+  width: 100% !important;
+  text-align: center;
+}
+
+/* Optional: Buttons und Inputs innerhalb der Formulare auch auf Breite bringen */
+#cpt-update-wrapper input,
+#cpt-update-wrapper select,
+#cpt-update-wrapper button,
+#cpt-update-wrapper textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: .25rem;
+}
 </style>
 
 
-<?php get_footer(); ?>
