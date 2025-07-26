@@ -123,9 +123,14 @@ if (gettype($vars) == "array") {
 	Beschreibung Description
 	Speichern Save
 
-TODO 21072025:
+
 ASTRA mit Styling: Alle Funtionen testen
-Rows per page funktioniert z.b. nicht
+funktioniert grundsätzlich, einiges Styling auch schon gemacht
+
+TODO 24072025:
+* Stylings gut dokumentieren
+* Stylings in eigenes css auslagern
+* Template name refactoring
 
 
 -----------------------------------------------------------------------------------

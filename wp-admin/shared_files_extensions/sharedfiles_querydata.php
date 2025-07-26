@@ -6,11 +6,15 @@ function queryData($parameters)
 
 	$select = "SELECT distinct p.id, p.post_title
 FROM `wp_posts` p
-left join `wp_postmeta` m on p.id=m.post_id and (m.meta_key like '%_sf_file_upload_cf%' or m.meta_key like '%_sf_description%')
-left join `wp_term_relationships` trel on trel.object_id=p.id
-left join `wp_terms` t on trel.term_taxonomy_id=t.term_id
-left join `wp_term_taxonomy` tax on tax.term_id=t.term_id and (tax.taxonomy='shared-file-tag' or tax.taxonomy='shared-file-category')
-where post_type='shared_file'";
+left join `wp_postmeta` m_cf on p.id=m_cf.post_id and m_cf.meta_key like '%_sf_file_upload_cf%' 
+left join `wp_postmeta` m_desc on p.id=m_desc.post_id and m_desc.meta_key like '%_sf_description%' 
+left join `wp_term_relationships` trel_tag on trel_tag.object_id=p.id
+left join `wp_terms` t_tag on trel_tag.term_taxonomy_id=t_tag.term_id
+left join `wp_term_taxonomy` tax_tag on tax_tag.term_id=t_tag.term_id and tax_tag.taxonomy='shared-file-tag'
+left join `wp_term_relationships` trel_cat on trel_cat.object_id=p.id
+left join `wp_terms` t_cat on trel_cat.term_taxonomy_id=t_cat.term_id
+left join `wp_term_taxonomy` tax_cat on tax_cat.term_id=t_cat.term_id and tax_cat.taxonomy='shared-file-category'
+where p.post_type='shared_file'";
 	$filter = "";
 
 	if ($parameters["search"]) {
@@ -20,16 +24,16 @@ where post_type='shared_file'";
 		} else {
 			$filter = "and 
 	(p.post_title like '%{$parameters["search"]}%' 
-	or t.name like '%{$parameters["search"]}%'
-	or (m.meta_key='_sf_description' and m.meta_value like '%{$parameters["search"]}%')
-	or (m.meta_key like '_sf_file_upload_cf%' and m.meta_value like '%{$parameters["search"]}%')
+	or (t_tag.name like '%{$parameters["search"]}%' and tax_tag.taxonomy='shared-file-tag')
+	or m_desc.meta_value like '%{$parameters["search"]}%'
+	or m_cf.meta_value like '%{$parameters["search"]}%'
 	)";
 		}
 	}
 
 	if ($parameters["category"]) {
 		$cat = $parameters["category"];
-		$filter .= "and (tax.taxonomy='shared-file-category' and t.name like '%{$cat}%')";
+		$filter .= "and (t_cat.name like '%{$cat}%' and tax_cat.taxonomy='shared-file-category')";
 	}
 
 	$limit = $parameters["posts_per_page"];
@@ -46,7 +50,6 @@ limit {$limit} offset {$offset}";
 		$pageparams = "order by p.post_title";
 	}
 	$query .= "\n" . $pageparams;
-
 
 	$wpdb = $parameters["wpdb"];
 	$queryCountResult = $wpdb->get_results($queryCount);

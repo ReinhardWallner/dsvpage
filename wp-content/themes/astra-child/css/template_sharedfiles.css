@@ -1,0 +1,205 @@
+/** Stylings für geänderte Zellen */
+.modified-input {
+    outline: 3px solid red;
+}
+
+.modified-checkbox {
+    outline: 3px solid red;
+}
+
+input[type=checkbox] .modified-checkbox {
+    accent-color: yellow;
+}
+
+/** disabled stylings */
+a.disabled {
+    pointer-events: none;
+    cursor: default;
+}
+
+input:disabled {
+    background-color: #938a8d;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    /* oder z.B. 'default', 'help', 'wait', etc. */
+    opacity: 0.6;
+    /* optional zur besseren Erkennbarkeit */
+}
+
+input[type="submit"]:disabled {
+    cursor: not-allowed;
+    /* oder z.B. 'default', 'help', 'wait', etc. */
+    opacity: 0.6;
+    /* optional zur besseren Erkennbarkeit */
+}
+
+select[aria-disabled="true"] {
+    pointer-events: none;
+    /* verhindert Interaktion */
+    opacity: 0.5;
+    background-color: #eee;
+    cursor: not-allowed;
+    /* beliebiger Cursor funktioniert nur in manchen browsern */
+}
+
+
+/** Stylings Tabelle mit Scrollbar */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+td div.justify-right {
+    /* there is a shorthand, TODO! 🙂 */
+    margin: auto 0 auto auto;
+}
+
+/* Wrapper für die Tabelle */
+.table-scroll-wrapper {
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    white-space: nowrap;
+    scrollbar-width: auto;
+    /* Firefox */
+    -ms-overflow-style: auto;
+    /* IE 10+ */
+}
+
+/* Tabelle optional stylen */
+.table-scroll-wrapper table {
+    border-collapse: collapse;
+    width: 100%;
+    /* Mindestbreite für Scroll-Effekt */
+}
+
+.table-scroll-wrapper table th,
+.table-scroll-wrapper table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.table-scroll-wrapper input[type="text"] {
+    max-width: 100%;
+    min-width: 150px;
+    box-sizing: border-box;
+}
+
+/** Table Cell style reduce height */
+td {
+    vertical-align: middle;
+    padding: 6px 8px;
+  }
+
+
+
+/** Formular stretch auf volle Breite */ 
+form,
+.shared-files-pagination-improved {
+display: block;
+width: 100%;
+max-width: 800px;
+margin: 2rem auto;
+padding: 1rem;
+background: #f9f9f9;
+border: 1px solid #ddd;
+border-radius: 8px;
+}
+
+/** Klare Trennung mit Abstand */
+hr.clear {
+margin: 2rem auto;
+width: 80%;
+border: none;
+border-top: 1px solid #ccc;
+}
+
+/** Pagination-Styling */
+.shared-files-pagination-improved {
+text-align: center;
+}
+
+.shared-files-pagination-improved a,
+.shared-files-pagination-improved span {
+display: inline-block;
+margin: 0.25rem 0.4rem;
+padding: 0.4rem 0.8rem;
+text-decoration: none;
+color: #005baa;
+border: 1px solid transparent;
+border-radius: 4px;
+transition: background 0.2s ease;
+}
+
+.shared-files-pagination-improved a:hover {
+background: #e6f0fa;
+border-color: #005baa;
+}
+
+.shared-files-pagination-improved .current {
+font-weight: bold;
+background: #005baa;
+color: white;
+border-color: #005baa;
+}	
+
+
+/** Button-Formular Border entfernen */
+#the-redirect-form,
+#the-redirect-form table,
+#the-redirect-form div,
+#the-redirect-form input,
+#the-redirect-form select,
+#the-redirect-form textarea {
+border: none !important;
+box-shadow: none !important; /* falls Schatten da sind */
+outline: none !important; /* falls Fokusrahmen da sind */
+}
+
+#the-redirect-form td{
+border-width: 0px !important;
+}
+
+/* Gesamte Seite stretchen Dein Wrapper: nimmt 100% Breite ein */
+#cpt-update-wrapper {
+width: 100%;
+padding: 0;
+margin: 0;
+}
+
+/* Direkt darin: alle Elemente auf volle Breite */
+#cpt-update-wrapper > * {
+display: block;
+width: 100% !important;
+max-width: none !important;
+margin: 0 auto 2rem auto;
+box-sizing: border-box;
+}
+
+/* Formulare explizit */
+#cpt-update-wrapper form {
+display: block;
+width: 100% !important;
+}
+
+/* Pagination block auch dehnen */
+#cpt-update-wrapper .shared-files-pagination-improved {
+width: 100% !important;
+text-align: center;
+}
+
+/* Optional: Buttons und Inputs innerhalb der Formulare auch auf Breite bringen */
+#cpt-update-wrapper input,
+#cpt-update-wrapper select,
+#cpt-update-wrapper button,
+#cpt-update-wrapper textarea {
+width: 100%;
+max-width: 100%;
+box-sizing: border-box;
+margin-bottom: .25rem;
+}

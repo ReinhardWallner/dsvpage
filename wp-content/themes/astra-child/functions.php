@@ -41,4 +41,19 @@ function my_custom_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'my_custom_scripts');
+
+function tempsharedfiles_enqueue_update_form_styles() {
+    // Prüfe, ob eine bestimmte Seitenvorlage verwendet wird
+    $istemp = is_page_template('template-editmeta-sharedfiles copy.php');
+    if (is_page_template('template-editmeta-sharedfiles copy.php')) {
+        wp_enqueue_style(
+            'update-form-style',
+            get_stylesheet_directory_uri() . '/css/template_sharedfiles.css',
+            array(),
+            '1.0',
+            'all'
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'tempsharedfiles_enqueue_update_form_styles');
 ?>
