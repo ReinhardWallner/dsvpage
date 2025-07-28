@@ -90,6 +90,21 @@ td div.justify-right {
     box-sizing: border-box;
 }
 
+/* Alternierende Zeilenfarbe für Tabelle */
+.table-scroll-wrapper table tr:nth-child(even) {
+    background-color: #f5f5f5;
+  }
+  
+  .table-scroll-wrapper table tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+  
+  /* Kopfzeile hervorheben (erste Zeile) */
+  .table-scroll-wrapper table tr:first-child {
+    background-color: #dce3e8;
+    font-weight: bold;
+  }
+
 /** Table Cell style reduce height */
 td {
     vertical-align: middle;
@@ -161,6 +176,11 @@ box-shadow: none !important; /* falls Schatten da sind */
 outline: none !important; /* falls Fokusrahmen da sind */
 }
 
+#the-redirect-form,
+#the-redirect-form table{
+    margin: 0px;
+}
+
 #the-redirect-form td{
 border-width: 0px !important;
 }
@@ -177,7 +197,7 @@ margin: 0;
 display: block;
 width: 100% !important;
 max-width: none !important;
-margin: 0 auto 2rem auto;
+margin: 0 auto 0 auto;
 box-sizing: border-box;
 }
 

@@ -112,7 +112,7 @@ if (gettype($vars) == "array") {
 * Nicht berechtigte User
 
 * Texte in fremder Sprache
-	* TODO: Eintragen in share-files.pot
+	* TODO: Eintragen in shared-files.pot
 	* Eintragen in loco-translate
 	Nur Kategorien bearbeiten Modify categories only
 	Nur Kategorien anzeigen Show only categories
@@ -128,8 +128,12 @@ ASTRA mit Styling: Alle Funtionen testen
 funktioniert grundsätzlich, einiges Styling auch schon gemacht
 
 TODO 24072025:
-* Stylings gut dokumentieren
-* Stylings in eigenes css auslagern
+* Stylings gut dokumentieren --> erledigt
+* Stylings in eigenes css auslagern --> erledigt
+* Alle Texte in Englisch und zu übersetzen: POT-File
+	FRAGE AN CHAT GPT: ich verwende loco translate zum übersetzen der texte. Mein Template bearbeitet einerseits custom post types und ist andererseits im child theme angesiedelt. wo definiere ich mein sprachfile?
+
+
 * Template name refactoring
 
 

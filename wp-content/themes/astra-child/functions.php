@@ -2,7 +2,7 @@
 // Astra Child Theme functions
 
 function astra_child_enqueue_styles() {
-    error_log("astra_child_enqueue_styles start" . print_r(get_template_directory_uri(), true));
+    // error_log("astra_child_enqueue_styles start" . print_r(get_template_directory_uri(), true));
     // wp_enqueue_style( 'astra-parent-style', get_template_directory_uri() . '/style.css' );
     wp_enqueue_style( 'astra-parent-style', get_template_directory_uri() . '/assets/css/minified/style-css.min.css' );
 
@@ -11,10 +11,10 @@ function astra_child_enqueue_styles() {
 add_action( 'wp_enqueue_scripts', 'astra_child_enqueue_styles' );
 
 
-function my_custom_scripts() {
-    error_log("my_custom_scripts");
+function asta_child_sharedfiles_template_custom_scripts() {
+    // error_log("asta_child_sharedfiles_template_custom_scripts");
     if (is_page('cpu-update')) { // Slug deiner Seite
-        error_log("my_custom_scripts IS PAGE cpu-update");
+        // error_log("asta_child_sharedfiles_template_custom_scripts IS PAGE cpu-update");
         wp_register_script('custom-inline-js', '');
         wp_enqueue_script('custom-inline-js');
 
@@ -40,7 +40,7 @@ function my_custom_scripts() {
         ");
     }
 }
-add_action('wp_enqueue_scripts', 'my_custom_scripts');
+add_action('wp_enqueue_scripts', 'asta_child_sharedfiles_template_custom_scripts');
 
 function tempsharedfiles_enqueue_update_form_styles() {
     // Prüfe, ob eine bestimmte Seitenvorlage verwendet wird
@@ -56,4 +56,20 @@ function tempsharedfiles_enqueue_update_form_styles() {
     }
 }
 add_action('wp_enqueue_scripts', 'tempsharedfiles_enqueue_update_form_styles');
+
+add_action( 'init', function() {
+    
+    $mo = get_stylesheet_directory() . '/languages/astra-child-de_DE.mo';
+    if ( file_exists( $mo ) ) {
+        $loaded = load_textdomain( 'astra-child', $mo );
+        error_log( 'IIIII Manuelles Laden astra-child: ' . ( $loaded ? 'OK' : 'FAILED' ) );
+    } else {
+        error_log( 'IIIII MO Datei nicht gefunden: ' . $mo );
+    }
+
+    global $l10n;
+    error_log( 'IIIII Aktuelle Domains im $l10n: ' . implode( ', ', array_keys( $l10n ) ) );
+ 
+});
+
 ?>

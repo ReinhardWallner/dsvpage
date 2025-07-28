@@ -67,7 +67,7 @@ limit {$limit} offset {$offset}";
 	array_push($headRow, "Id");
 	array_push($headRowKat, "Id");
 	array_push($headRow, esc_html__('Title', 'shared-files'));
-	array_push($headRowKat, esc_html__('Title', 'shared-files'));
+	array_push($headRowKat, esc_html__('Title', 'astra-child'));
 	array_push($headRow, esc_html__('Description', 'shared-files'));
 	$keys = array(0 => "file_id", 1 => "title", 2 => "description");
 

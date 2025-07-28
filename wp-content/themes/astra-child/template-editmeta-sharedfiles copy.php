@@ -253,10 +253,10 @@ $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>
 $searchFields .= '<div class="shared-files-category-select-container">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td>';
-$nurKategorienText = esc_html__('Modify categories only', 'shared-files');
+$nurKategorienText = esc_html__('Modify categories only', 'astra-child');
 
 if ($isReadonlyUser == true){
-	$nurKategorienText = esc_html__('Show only categories', 'shared-files');
+	$nurKategorienText = esc_html__('Show only categories', 'astra-child');
 }
 if ($nurKategorienAnzeigen == true) {
 	$searchFields .= '<td style="max-width: 250px;"><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></td>';
@@ -264,22 +264,22 @@ if ($nurKategorienAnzeigen == true) {
 	$searchFields .= '<td style="max-width: 250px;"><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></td>';
 }
 
-error_log("posts_per_page: " . print_r($posts_per_page,true));
+//error_log("posts_per_page: " . print_r($posts_per_page,true));
 // Zeilen pro Seite
 $searchFields .= '<td style="white-space: nowrap;"><div style="display: flex; align-items: center; gap: 6px; ">';
-$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'shared-files') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 40px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
+$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 100px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
 $searchFields .= '</div></td>';
 
 // Download ZIP
 $searchFields .= '<td>';
-$searchFields .= '<div class="justify-right"><button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'shared-files') . '</button>';
+$searchFields .= '<div class="justify-right"><button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'astra-child') . '</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
 $searchFields .= '</td>';
 
 // Download Excel Liste
 $searchFields .= '<td>';
-$searchFields .= '<div class="justify-right"><button name="excepExportBtn" style="float:right" onclick="onExcelExportclick()">' . esc_html__('Excel Export', 'shared-files') . '</button>';
+$searchFields .= '<div class="justify-right"><button name="excepExportBtn" style="float:right" onclick="onExcelExportclick()">' . esc_html__('Excel Export', 'astra-child') . '</button>';
 $searchFields .= '<input type="hidden" name="zipfilename" id="zipfilename"/>';
 $searchFields .= '<input type="hidden" name="createzipFile" id="createzipFile"/>';
 $searchFields .= '</td>';
