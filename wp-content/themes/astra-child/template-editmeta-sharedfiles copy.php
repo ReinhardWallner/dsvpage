@@ -228,7 +228,7 @@ if ($search) {
 }
 
 $searchFields .= '</td><td>';
-
+error_log("CATEGORY IN UPD " . print_r($category, true));
 // Kategorienauswahl
 $categories_order = 'ASC';
 $argsCategoryCombo = array(
@@ -378,7 +378,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 		}
 	}
 
-	// add rows to output
+	// add rows to output (sorting)
 	for ($i = 0; $i < count($tableRows); $i++) {
 		$row = $tableRows[$i];
 		$table .= $row;

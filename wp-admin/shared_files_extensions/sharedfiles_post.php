@@ -51,7 +51,7 @@ if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 
 
 $vars = $_POST;
-// error_log("POST VALUES " . print_r($vars, true));
+ error_log("POST VALUES " . print_r($vars, true));
 
 if (gettype($vars) == "array") {
 	// Read post data
@@ -103,6 +103,7 @@ if (gettype($vars) == "array") {
 	$customfield_valuesfiltered = modifiedValuesArray($customfield_values);
 	saveCustomFields($customfield_valuesfiltered);
 
+	error_log("category_values:" . print_r($category_values, true));
 	$category_valuesfiltered = modifiedValuesArray($category_values);
 	saveCategories($category_valuesfiltered);
 }
@@ -130,8 +131,7 @@ funktioniert grundsätzlich, einiges Styling auch schon gemacht
 TODO 24072025:
 * Stylings gut dokumentieren --> erledigt
 * Stylings in eigenes css auslagern --> erledigt
-* Alle Texte in Englisch und zu übersetzen: POT-File
-	FRAGE AN CHAT GPT: ich verwende loco translate zum übersetzen der texte. Mein Template bearbeitet einerseits custom post types und ist andererseits im child theme angesiedelt. wo definiere ich mein sprachfile?
+* Alle Texte in Englisch und zu übersetzen: POT-File --> erledigt
 
 
 * Template name refactoring

@@ -223,3 +223,50 @@ max-width: 100%;
 box-sizing: border-box;
 margin-bottom: .25rem;
 }
+
+/* Wrapper */
+.dual-listbox-wrapper {
+    margin: 20px 0;
+    width: 100%;
+  }
+  
+  /* Flexbox für die Listboxen */
+  .dual-listbox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  /* Jede Liste */
+  .dual-list {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Select-Felder */
+  .dual-list select {
+    width: 100%;
+    min-height: 200px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #fff;
+  }
+  
+  /* Buttons in der Mitte */
+  .dual-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+  
+  /* Astra-kompatible Buttons */
+  .dual-buttons .button {
+    width: 50px;
+    text-align: center;
+  }
+  

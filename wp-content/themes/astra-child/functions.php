@@ -38,14 +38,30 @@ function asta_child_sharedfiles_template_custom_scripts() {
                 }
             });
         ");
+    } else if(is_page('cpt-category-update')) { // Slug deiner Seite
+        // error_log("asta_child_sharedfiles_template_custom_scripts IS PAGE cpu-update");
+        wp_register_script('custom-inline-js', '');
+        wp_enqueue_script('custom-inline-js');
+
+        // 2. Inline-JS anhängen
+        wp_add_inline_script('custom-inline-js', "
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof onloadInternally === 'function') {
+                    onloadInternally();
+                }
+            });
+        ");
     }
 }
 add_action('wp_enqueue_scripts', 'asta_child_sharedfiles_template_custom_scripts');
 
+
 function tempsharedfiles_enqueue_update_form_styles() {
     // Prüfe, ob eine bestimmte Seitenvorlage verwendet wird
     $istemp = is_page_template('template-editmeta-sharedfiles copy.php');
-    if (is_page_template('template-editmeta-sharedfiles copy.php')) {
+    $istemp2 = is_page_template('template-editmeta-sharedfiles-categories.php');
+    if (is_page_template('template-editmeta-sharedfiles copy.php') ||
+    is_page_template('template-editmeta-sharedfiles-categories.php')) {
         wp_enqueue_style(
             'update-form-style',
             get_stylesheet_directory_uri() . '/css/template_sharedfiles.css',
@@ -66,10 +82,6 @@ add_action( 'init', function() {
     } else {
         error_log( 'IIIII MO Datei nicht gefunden: ' . $mo );
     }
-
-    global $l10n;
-    error_log( 'IIIII Aktuelle Domains im $l10n: ' . implode( ', ', array_keys( $l10n ) ) );
- 
 });
 
 ?>

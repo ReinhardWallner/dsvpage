@@ -35,6 +35,7 @@ function saveCustomFields($customfield_values)
 function saveCategories($category_valuesfiltered)
 {
 	// error_log("saveCategories input ". print_r($category_valuesfiltered, true));
+	 
 	foreach ($category_valuesfiltered as $file_id => $value) {
 		$termsToRemove = [];
 		$termIdsAdded = [];
@@ -47,13 +48,54 @@ function saveCategories($category_valuesfiltered)
 			}
 		}
 
-		// error_log("saveCategories termsToRemove ". print_r($termsToRemove, true));
-		// error_log("saveCategories termIdsAdded ". print_r($termIdsAdded, true));
+		//  error_log("saveCategories termsToRemove ". print_r($termsToRemove, true));
+		//  error_log("saveCategories termIdsAdded ". print_r($termIdsAdded, true));
 		if (count($termsToRemove) !== 0) {
 			$setKategoriesResult = wp_remove_object_terms($file_id, $termsToRemove, 'shared-file-category');
 		}
 		if (count($termIdsAdded) !== 0) {
 			$setKategoriesResult = wp_set_post_terms($file_id, $termIdsAdded, 'shared-file-category', true);
+		}
+	}
+}
+
+function replaceCategories($categorySlug, $fileIds){
+	// error_log("replaceCategories ". print_r($categorySlug, true) . ", " . print_r($fileIds, true));
+
+	$term = get_term_by('slug', $categorySlug, 'shared-file-category');
+	// error_log("replaceCategories categ ". print_r($term, true));
+
+	$files = get_posts([
+		'post_type' => 'shared_file', // Custom Post Type
+		'posts_per_page' => -1,       // Alle Files
+			'tax_query' => [
+			[
+				'taxonomy' => 'shared-file-category',
+				'field'    => 'slug', // Alternativ: 'term_id'
+				'terms'    => $categorySlug,
+			],
+		],
+	]);
+	
+	foreach ($files as $file) {
+		// error_log('ID: ' . $file->ID . ' - Titel: ' . $file->post_title . '<br>');
+		if($fileIds != null && in_array($file->ID, $fileIds)){
+			// error_log('ID: ' . $file->ID . ' is contained. nothting to do');
+		} else{
+			// error_log('ID: ' . $file->ID . ' is not contained --> To remove termid=' . $term->term_id);
+			wp_remove_object_terms($file->ID, [$term->term_id], 'shared-file-category');
+		}
+	}
+
+	if($fileIds != null){
+		foreach ($fileIds as $fileId) {
+			if(array_filter($files, fn($file) => (int)$file->ID === (int)$fileId)){
+				// error_log('fileId: ' . $fileId . ' is contained. nothting to do');
+			} else{
+				// error_log('fileId: ' . $fileId . ' is not contained --> To ADD ' . $term->term_id);
+				$res = wp_set_post_terms((int)$fileId, [(int)$term->term_id], 'shared-file-category', true);
+				// error_log('fileId: ' . $fileId . ' added result ' . print_r($res, true));
+			}
 		}
 	}
 }
