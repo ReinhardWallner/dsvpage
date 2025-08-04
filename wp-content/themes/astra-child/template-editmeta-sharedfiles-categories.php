@@ -230,7 +230,7 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
   <!-- Linke Liste -->
   <div class=\"dual-list\">
     <label>Verfügbare Einträge</label>
-    <select id=\"listLeft\" multiple></select>
+    <select id=\"listLeft\" multiple ondblclick='leftListhandleDoubleClick()'></select>
   </div>
 
   <!-- Buttons -->
@@ -242,7 +242,7 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
   <!-- Rechte Liste -->
   <div class=\"dual-list\">
     <label>Zugeordnete Einträge</label>
-    <select id=\"selectedFiles\" name=\"selectedFiles[]\" multiple></select>
+    <select id=\"selectedFiles\" name=\"selectedFiles[]\" multiple ondblclick='rightListhandleDoubleClick()'></select>
   </div>
 </div>
 </div>";
@@ -342,7 +342,7 @@ foreach ($allcategories as $obj) {
     const to = document.getElementById(toId);
 
     Array.from(from.selectedOptions).forEach(option => {
-      // console.log("moveSelected fromId, toId, option", fromId, toId, option);
+       console.log("moveSelected fromId, toId, option", from, to, option);
       let index = getIndexForFileInsert(option.value, to);
 
       if (index >= to.options.length) {
@@ -350,14 +350,37 @@ foreach ($allcategories as $obj) {
       } else {
         to.insertBefore(option, to.options[index]); // vor dem Element am Index einfügen
       }
-      // to.add(option);
     });
   }
 
+  function leftListhandleDoubleClick() {
+    const option = document.getElementById('listLeft');
+    if(option.selectedOptions && option.selectedOptions.length == 1){
+      moveSelectedId(listLeft, selectedFiles, option.selectedOptions[0])
+    }
+  }
+
+  function rightListhandleDoubleClick(){
+    const option = document.getElementById('selectedFiles');
+    if(option.selectedOptions && option.selectedOptions.length == 1){
+      moveSelectedId(selectedFiles, listLeft, option.selectedOptions[0])
+    }
+  }
+
+  function moveSelectedId(fromList, toList, option) {
+    let opts = fromList.selectedOptions;
+    let index = getIndexForFileInsert(option.value, toList);
+    if (index >= toList.options.length) {
+      toList.add(option); // am Ende hinzufügen
+    } else {
+      toList.insertBefore(option, toList.options[index]); // vor dem Element am Index einfügen
+    }
+  }
+
   function getIndexForFileInsert(fileId, targetList) {
-    // console.log("getIndexForFileInsert fileId, targetlist, sortedFilelist", fileId, targetList, sortedFileList);
+    //  console.log("getIndexForFileInsert fileId, targetlist, sortedFilelist", fileId, targetList, sortedFileList);
     if(targetList.options.length == 0){
-      // console.log("getIndexForFileInsert return 0 because targetList is empty");
+      //  console.log("getIndexForFileInsert return 0 because targetList is empty");
       return 0;
     }
 
@@ -373,27 +396,27 @@ foreach ($allcategories as $obj) {
 
       elementsBefore.push(fileEntry);
     }
-    // console.log("getIndexForFileInsert foundFileEntry elementsBefore", foundFileEntry, elementsBefore);
+    //  console.log("getIndexForFileInsert foundFileEntry elementsBefore", foundFileEntry, elementsBefore);
     // find position in target list
     if(elementsBefore.length == 0){
-      // console.log("getIndexForFileInsert return 0 because elements before LIST is empty");
+      //  console.log("getIndexForFileInsert return 0 because elements before LIST is empty");
        return 0;
     } else {
       for(let i = elementsBefore.length; i--; i => 0){
         let element = elementsBefore[i];
-        // console.log("    CHECK element " + i + ", " + element["fileName"]);
+        //  console.log("    CHECK element " + i + ", " + element["fileName"]);
         for(let j = 0; j < targetList.options.length; j++){
           let option = targetList.options[j];
-          // console.log("         CHECK target value " + option.value + ", " + element["fileName"]);
+          //  console.log("         CHECK target value " + option.value + ", " + element["fileName"]);
           if(option.value == element["file_id"]){
-            // console.log("getIndexForFileInsert return " + (j + 1) + " because elements before " + element["fileName"] + " found");
+            //  console.log("getIndexForFileInsert return " + (j + 1) + " because elements before " + element["fileName"] + " found");
             return j + 1;
           }
         }
       }
     }
     
-    // console.log("getIndexForFileInsert return 0 because elements before not found");
+    //  console.log("getIndexForFileInsert return 0 because elements before not found");
     return 0;
   }
 
@@ -441,13 +464,12 @@ foreach ($allcategories as $obj) {
 
 
 
-      //TODO: Hin und herschieben alphabetisch
-      // Doppelklick
+      //TODO: 
       // Speicher erst aktivieren, wenn kategorie ausgewählt
-      // Suche durch input ersetzen und auf aktuelle liste filtern
       // 2. Category sperren, wenn suchfilter eingeschaltet UND wenn mindestens 1 move passiert ist
-      // Zuordnungen bearbeiten
-      // Submit schickt Kategorie und Liste der geänderten werte, welche gespeichert werden müssen (Termid, Liste der File-Ids)
+      // Suche durch input ersetzen und auf aktuelle liste filtern
+      // Anlegen neuer Kategorien
+      // Ausgewählte Kategorie löschen
         }    
 	}
 </script>
