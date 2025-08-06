@@ -270,3 +270,49 @@ margin-bottom: .25rem;
     text-align: center;
   }
   
+  /* Kategorie button rechts vom select */
+  .select-with-button {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Abstand zwischen Select und Button */
+  }
+  
+  .select-with-button select {
+    flex: 1;
+    min-width: 200px;
+    height: 32px; /* Standardhöhe (abhängig vom Theme) */
+  }
+  
+  .select-with-button button {
+    height: 32px;           /* gleiche Höhe wie das Select */
+    padding: 0 12px;        /* nur horizontales Padding für Text */
+    line-height: 1;         /* Text vertikal zentrieren */
+    white-space: nowrap;    /* Kein Umbruch */
+  }
+
+  /* Kategorie modal */
+  .modal {
+    display: none; /* Versteckt, bis geöffnet */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 300px;
+  }
+  
+  .modal-actions {
+    margin-top: 10px;
+    text-align: right;
+  }
+  
+  .modal-actions button {
+    margin-left: 8px;
+  }

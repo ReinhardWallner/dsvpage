@@ -110,8 +110,11 @@ $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>
 
 // Nur Kategorien bearbeiten
 $searchFields .= '<div class="shared-files-category-select-container">';
-$searchFields .= '<label for="sf_category">' . __('Kategorie wählen (inaktiv wenn Suchfilter ein):', 'shared-files') . '</label>';
+$searchFields .= '<label for="sf_category">' . __('Kategorie wählen (inaktiv wenn Suchfilter ein oder Änderungen):', 'shared-files') . '</label>';
+$searchFields .= '<div class="select-with-button">';
 $searchFields .= $categoryDropdowm;
+$searchFields .= ' <button type="button" id="addNewCategory" title="Kategorie hinzufügen" class="button">Neu</button>';
+$searchFields .= '</div>';
 $searchFields .= '</div></td></tr></table></div></form>';
 
 $adminUrl = get_admin_url();
@@ -231,7 +234,7 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
   <!-- Linke Liste -->
   <div class=\"dual-list\">
     <label>Verfügbare Einträge</label>
-    <select id=\"listLeft\" multiple ondblclick='leftListhandleDoubleClick()'></select>
+    <select id=\"listLeft\" multiple disabled='true' ondblclick='leftListhandleDoubleClick()'></select>
   </div>
 
   <!-- Buttons -->
@@ -243,7 +246,7 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
   <!-- Rechte Liste -->
   <div class=\"dual-list\">
     <label>Zugeordnete Einträge</label>
-    <select id=\"selectedFiles\" name=\"selectedFiles[]\" multiple ondblclick='rightListhandleDoubleClick()'></select>
+    <select id=\"selectedFiles\" name=\"selectedFiles[]\" multiple disabled='true' ondblclick='rightListhandleDoubleClick()'></select>
   </div>
 </div>
 </div>";
@@ -254,9 +257,21 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
 $form .= '<input type="submit" name="submit" disabled="true" value="' . esc_html__('Save', 'shared-files') . '"></input>';
 
 $form .= '</form>';
+
 echo $form;
 
 echo '</div>';
+
+echo '<div id="newCategoryModal" class="modal">
+<div class="modal-content">
+  <h3>Neue Kategorie anlegen</h3>
+  <input type="text" id="newCategoryInput" placeholder="Kategoriename eingeben">
+  <div class="modal-actions">
+    <button id="saveCategory">Speichern</button>
+    <button id="cancelCategory">Abbrechen</button>
+  </div>
+</div>
+</div>';
 
 // error_log("form " . print_r($form, true));
 
@@ -284,8 +299,39 @@ foreach ($allcategories as $obj) {
         // set values in list entries
         onCategoryChange();
       }
+    } else { 
+      applyFilter();
     }
 	}
+
+let modal = document.getElementById("newCategoryModal");
+let input = document.getElementById("newCategoryInput");
+
+document.getElementById("addNewCategory").addEventListener("click", () => {
+  modal.style.display = "flex";
+  input.value = ""; // Eingabefeld leeren
+  input.focus();
+});
+
+document.getElementById("saveCategory").addEventListener("click", () => {
+  let newCategory = input.value.trim();
+  if (newCategory) {
+    console.log("Neue Kategorie:", newCategory);
+    modal.style.display = "none";
+    // alert(`Kategorie "${newCategory}" wurde angelegt!`);
+
+    var form = document.getElementById("dataForm-categories");
+    console.log("Neue Kategorie Form", form);
+    appendHiddenInput("sf_category_createnew", form, false, newCategory);
+    // Natives submit erzwingen!
+    HTMLFormElement.prototype.submit.call(form);
+  }
+});
+
+document.getElementById("cancelCategory").addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
 
   document.getElementById("dataForm-categories").addEventListener("submit", function (e) {
     const selected = document.getElementById("selectedFiles").options;
@@ -300,11 +346,15 @@ foreach ($allcategories as $obj) {
     appendHiddenInput("searchField", form);
   });
 
-  function appendHiddenInput(name, form, ischeckbox){
+  function appendHiddenInput(name, form, ischeckbox, explicitValue){
       const hiddenInput = document.createElement("input");
       hiddenInput.type = "hidden";
       hiddenInput.name = "referer_parm_" + name;
-      let value = getInputValue(name);
+      let value;
+      if(explicitValue)
+        value = explicitValue;
+      else
+        value = getInputValue(name);
       // if(ischeckbox){
       //   value = getInputValueCheckbox(name);
       // }
@@ -338,12 +388,12 @@ foreach ($allcategories as $obj) {
   // console.log("sortedFileList", sortedFileList);
 
   // Funktion zum Verschieben von Optionen
-  function moveSelected(fromId, toId) {
+  function moveSelected(fromId, toId) {   
     const from = document.getElementById(fromId);
     const to = document.getElementById(toId);
 
     Array.from(from.selectedOptions).forEach(option => {
-       console.log("moveSelected fromId, toId, option", from, to, option);
+      console.log("moveSelected fromId, toId, option", from, to, option);
       let index = getIndexForFileInsert(option.value, to);
 
       if (index >= to.options.length) {
@@ -352,18 +402,30 @@ foreach ($allcategories as $obj) {
         to.insertBefore(option, to.options[index]); // vor dem Element am Index einfügen
       }
     });
+
+    disableCategoryOptions();
+  }
+
+  function updateTooltip(btn) {
+    if (btn.disabled) {
+      btn.title = "Button ist inaktiv, weil ungespeicherte Änderungen existieren."
+      btn.style.cursor = "not-allowed";
+    } else {
+      btn.title = "Kategorie hinzufügen";
+      btn.style.cursor = "pointer";
+    }
   }
 
   function leftListhandleDoubleClick() {
     const option = document.getElementById('listLeft');
-    if(option.selectedOptions && option.selectedOptions.length == 1){
-      moveSelectedId(listLeft, selectedFiles, option.selectedOptions[0])
+    if(option.selectedOptions && option.selectedOptions.length == 1) {
+      moveSelectedId(listLeft, selectedFiles, option.selectedOptions[0]);
     }
   }
 
-  function rightListhandleDoubleClick(){
+  function rightListhandleDoubleClick() {
     const option = document.getElementById('selectedFiles');
-    if(option.selectedOptions && option.selectedOptions.length == 1){
+    if(option.selectedOptions && option.selectedOptions.length == 1) {
       moveSelectedId(selectedFiles, listLeft, option.selectedOptions[0])
     }
   }
@@ -376,6 +438,17 @@ foreach ($allcategories as $obj) {
     } else {
       toList.insertBefore(option, toList.options[index]); // vor dem Element am Index einfügen
     }
+
+    disableCategoryOptions();
+  }
+
+  function disableCategoryOptions(){
+    let newCategory = document.getElementById('addNewCategory');
+    newCategory.disabled = true;
+    updateTooltip(newCategory);
+
+    let select = document.getElementById('sf_category');
+    select.disabled = true;
   }
 
   function getIndexForFileInsert(fileId, targetList) {
@@ -437,17 +510,24 @@ foreach ($allcategories as $obj) {
     let applyParameters = catName != null && catName.length > 0;
     let saveBtn = document.getElementsByName("submit");
      if(catName == null || catName.length == 0) {
-      saveBtn[0].disabled = true;
+      if (saveBtn.length > 0) {
+        saveBtn[0].disabled = true;
+        listLeft.disabled = true;
+        selectedFiles.disabled = true;
+      }
       return;
-    }
-
-    if (saveBtn.length > 0) {
-      saveBtn[0].disabled = false;
     }
 
     const selectedFiles = document.getElementById("selectedFiles");
     const listLeft = document.getElementById("listLeft");
 
+    if (saveBtn.length > 0) {
+      saveBtn[0].disabled = false;
+      listLeft.disabled = false;
+      selectedFiles.disabled = false;
+    }
+
+   
     while (listLeft.options.length > 0) {
       listLeft.remove(0); // Entfernt immer das erste Element, bis leer
     }
@@ -521,7 +601,7 @@ foreach ($allcategories as $obj) {
   }
 
   //TODO: 
-  // Anlegen neuer Kategorien
+  // Anlegen neuer Kategorien --> erdledigt
   // Ausgewählte Kategorie löschen
 
   // Alle Files importieren
