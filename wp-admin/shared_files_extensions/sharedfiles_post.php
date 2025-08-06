@@ -51,7 +51,7 @@ if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 
 
 $vars = $_POST;
- error_log("POST VALUES " . print_r($vars, true));
+error_log("POST VALUES " . print_r($vars, true));
 
 if (gettype($vars) == "array") {
 	// Read post data
@@ -123,6 +123,10 @@ if (gettype($vars) == "array") {
 	Titel Title
 	Beschreibung Description
 	Speichern Save
+
+	Kategorie wählen (inaktiv wenn Suchfilter ein):
+	Verfügbare Einträge
+	Zugeordnete Einträge
 
 
 ASTRA mit Styling: Alle Funtionen testen

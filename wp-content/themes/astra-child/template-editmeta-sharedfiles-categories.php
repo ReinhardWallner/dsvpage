@@ -39,8 +39,8 @@ include  $sharedfilefolder . "sharedfiles_helperfunctions.php";
 $s = get_option('shared_files_settings');
 $custom_fields_cnt = intval($s['custom_fields_cnt']) + 1;
 
-error_log("TEMPLATE CAT START _POST " . print_r($_POST, return: true));
-error_log("TEMPLATE CAT START _GET " . print_r($_GET, true));
+// error_log("TEMPLATE CAT START _POST " . print_r($_POST, return: true));
+// error_log("TEMPLATE CAT START _GET " . print_r($_GET, true));
 
 $taxonomy_slug = 'shared-file-category';
 $allcategories = get_terms($taxonomy_slug, array('hide_empty' => 0));
@@ -81,9 +81,9 @@ $searchFields .= '<table style="width: 100%">
 
 // Suchfeld
 if ($search) {
-	$searchFields .= '<input type="text" shared-files-search-files-v2 name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
+	$searchFields .= '<input type="text" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
 } else {
-	$searchFields .= '<input type="text" shared-files-search-files-v2 name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
+	$searchFields .= '<input type="text" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
 }
 
 $searchFields .= '</td><td>';
@@ -110,6 +110,7 @@ $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>
 
 // Nur Kategorien bearbeiten
 $searchFields .= '<div class="shared-files-category-select-container">';
+$searchFields .= '<label for="sf_category">' . __('Kategorie wählen (inaktiv wenn Suchfilter ein):', 'shared-files') . '</label>';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div></td></tr></table></div></form>';
 
@@ -250,7 +251,7 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
 
 // error_log("ALL DATA allTitles " . print_r($allTitles, true));
 
-$form .= '<input type="submit" name="submit" value="' . esc_html__('Save', 'shared-files') . '"></input>';
+$form .= '<input type="submit" name="submit" disabled="true" value="' . esc_html__('Save', 'shared-files') . '"></input>';
 
 $form .= '</form>';
 echo $form;
@@ -296,7 +297,7 @@ foreach ($allcategories as $obj) {
     const form = e.target;
     // console.log("SUBMIT dataForm-categories form", form);
 		appendHiddenInput("sf_category", form);
-	
+    appendHiddenInput("searchField", form);
   });
 
   function appendHiddenInput(name, form, ischeckbox){
@@ -421,55 +422,108 @@ foreach ($allcategories as $obj) {
   }
 
   function onCategoryChange() {
-		let select = document.getElementById('sf_category');
-    const selectedValues = Array.from(select.selectedOptions).map(option => option.value);
-
-    // console.log("values", selectedValues, selectedValues.length);
-    if(selectedValues && selectedValues.length == 1){
-        // console.log("select el: ",selectedValues[0], categoryFileMapping);
-        let catName = selectedValues[0];
-        let catEntry = categoryFileMapping[catName];
-        // console.log("select entry: ",catEntry);
-        // console.log("select fileCategoryMapping: ",fileCategoryMapping);
-
-        const selectedFiles = document.getElementById("selectedFiles");
-        const listLeft = document.getElementById("listLeft");
-        while (listLeft.options.length > 0) {
-          listLeft.remove(0); // Entfernt immer das erste Element, bis leer
-        }
-        while (selectedFiles.options.length > 0) {
-          selectedFiles.remove(0); // Entfernt immer das erste Element, bis leer
-        }
-
-        const keys = Object.keys(sortedFileList);
-        for (const key of keys) {
-          let fileEntry = sortedFileList[key];
-          // console.log("File ID:", fileEntry );
-          // contains categories array
-          if(fileCategoryMapping){
-            let fileCatMapping = fileCategoryMapping[fileEntry["file_id"]];
-            // console.log("File fileCatMapping:", fileCatMapping );
-            const option = document.createElement("option");
-            option.text = fileEntry["fileName"];
-            option.value = fileEntry["file_id"];      
-
-            let mappedCategory = fileCatMapping["categories"].find(c => c.slug == catName);
-            if(mappedCategory){
-              selectedFiles.add(option);
-            } else {
-              listLeft.add(option)
-            }
-          }
-        }
-
-
-
-      //TODO: 
-      // Speicher erst aktivieren, wenn kategorie ausgewählt
-      // 2. Category sperren, wenn suchfilter eingeschaltet UND wenn mindestens 1 move passiert ist
-      // Suche durch input ersetzen und auf aktuelle liste filtern
-      // Anlegen neuer Kategorien
-      // Ausgewählte Kategorie löschen
-        }    
+    searchParametersChange();
+    applyFilter();
 	}
+
+  function onInputSearchText() {
+    applyFilter();
+  }
+
+  function searchParametersChange(){
+    let select = document.getElementById('sf_category');
+    let catName = select.selectedOptions.length === 1 ? select.value : undefined;
+
+    let applyParameters = catName != null && catName.length > 0;
+    let saveBtn = document.getElementsByName("submit");
+     if(catName == null || catName.length == 0) {
+      saveBtn[0].disabled = true;
+      return;
+    }
+
+    if (saveBtn.length > 0) {
+      saveBtn[0].disabled = false;
+    }
+
+    const selectedFiles = document.getElementById("selectedFiles");
+    const listLeft = document.getElementById("listLeft");
+
+    while (listLeft.options.length > 0) {
+      listLeft.remove(0); // Entfernt immer das erste Element, bis leer
+    }
+    while (selectedFiles.options.length > 0) {
+      selectedFiles.remove(0); // Entfernt immer das erste Element, bis leer
+    }
+
+    const keys = Object.keys(sortedFileList);
+    for (const key of keys) {
+      let fileEntry = sortedFileList[key];
+      // console.log("File ID:", fileEntry );
+      // contains categories array
+      if(fileCategoryMapping){
+        let fileCatMapping = fileCategoryMapping[fileEntry["file_id"]];
+        // console.log("File fileCatMapping:", fileCatMapping );
+        const option = document.createElement("option");
+        option.text = fileEntry["fileName"];
+        option.value = fileEntry["file_id"];      
+
+        let mappedCategory = fileCatMapping["categories"].find(c => c.slug == catName);
+        if(mappedCategory) {
+          selectedFiles.add(option);
+        } else {
+            listLeft.add(option);
+        }
+      }
+    }
+  }
+
+  function applyFilter() {
+    let select = document.getElementById('sf_category');
+    let catName = select.selectedOptions.length === 1 ? select.value : undefined;
+
+    if (!catName) {
+      console.log("applyFilter unwirksam, keine Kategorie gewählt");
+      return;
+    }
+
+   
+    let searchFilter = getInputValue("searchField");
+    const keys = Object.keys(sortedFileList);
+    
+    select.disabled = searchFilter && searchFilter.length > 0;  
+    
+    let selectedFiles = document.getElementById("selectedFiles");
+    let selectedValues = Array.from(selectedFiles.options).map(option => parseInt(option.value)); 
+    // console.log("SelectedFiles: ", selectedValues); // z.B. [33, 38, 37]
+
+    // Liste leeren
+    listLeft.options.length = 0;
+
+    for (const key of keys) {
+      let fileEntry = sortedFileList[key];
+      let fileId = parseInt(fileEntry["file_id"]);
+      let fileName = fileEntry["fileName"];
+
+      let isSelected = selectedValues.includes(fileId);
+      //  console.log("File ID: includes?", fileEntry, isSelected, fileName);
+
+      if (!isSelected) {
+        const option = document.createElement("option");
+        option.text = fileEntry["fileName"];
+        option.value = fileId;
+
+        // Optional: Filter nach Suchfeld oder Kategorie aktivieren
+        if (!searchFilter || (searchFilter && fileName.toLowerCase().includes(searchFilter.toLowerCase()))) {
+          listLeft.add(option);
+        }
+      }
+    }
+  }
+
+  //TODO: 
+  // Anlegen neuer Kategorien
+  // Ausgewählte Kategorie löschen
+
+  // Alle Files importieren
+  // Massentests
 </script>
