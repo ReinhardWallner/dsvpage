@@ -75,8 +75,9 @@ $searchFields = '<form
 $searchFields .= '<div>';
 $searchFields .= '<table style="width: 100%">
     <colgroup>
-       <col span="1" style="width: 30%;" />
-       <col span="1" style="width: 70%;" />
+       <col span="1" style="width: 25%;" />
+       <col span="1" style="width: 40%;" />
+       <col span="1" style="width: 35%;" />
     </colgroup><tr><td>';
 
 // Suchfeld
@@ -114,8 +115,12 @@ $searchFields .= '<label for="sf_category">' . __('Kategorie wählen (inaktiv we
 $searchFields .= '<div class="select-with-button">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= ' <button type="button" id="addNewCategory" title="Kategorie hinzufügen" class="button">Neu</button>';
+$searchFields .= ' <button type="button" id="deleteSelectedCategory" title="Kategorie hinzufügen" disabled="true" class="button">Löschen</button>';
 $searchFields .= '</div>';
-$searchFields .= '</div></td></tr></table></div></form>';
+$searchFields .= '<div></div></td>';
+$searchFields .= '<td style="width: 1%; white-space: nowrap;"><button type="button" id="reloadCurrentPage" title="Änderungen verwerfen" disabled="true" class="button">Änderungen verwerfen</button></td>';
+
+$searchFields .= '</tr></table></div></form>';
 
 $adminUrl = get_admin_url();
 $postUrl = $adminUrl . 'shared_files_extensions/sharedfiles_category_post.php';
@@ -251,7 +256,6 @@ $form .= "</div><div class=\"dual-listbox-wrapper\">
 </div>
 </div>";
 
-
 // error_log("ALL DATA allTitles " . print_r($allTitles, true));
 
 $form .= '<input type="submit" name="submit" disabled="true" value="' . esc_html__('Save', 'shared-files') . '"></input>';
@@ -269,6 +273,23 @@ echo '<div id="newCategoryModal" class="modal">
   <div class="modal-actions">
     <button id="saveCategory">Speichern</button>
     <button id="cancelCategory">Abbrechen</button>
+  </div>
+</div></div>
+<div id="deleteCategoryModal" class="modal">
+<div class="modal-content">
+  <label id="deletemodalLabel">Soll die gewählte Kategorie gelöscht werden?</label>
+  <div class="modal-actions">
+    <button id="deleteCategory">Löschen</button>
+    <button id="cancelDeleteCategory">Abbrechen</button>
+  </div>
+</div>
+</div>
+<div id="reloadPageModal" class="modal">
+<div class="modal-content">
+  <label>Änderungen verwerfen und Seite neu laden?</label>
+  <div class="modal-actions">
+    <button id="reloadPage">Verwerfen</button>
+    <button id="cancelReloadPage">Abbrechen</button>
   </div>
 </div>
 </div>';
@@ -304,34 +325,81 @@ foreach ($allcategories as $obj) {
     }
 	}
 
-let modal = document.getElementById("newCategoryModal");
-let input = document.getElementById("newCategoryInput");
+  let modal = document.getElementById("newCategoryModal");
+  let input = document.getElementById("newCategoryInput");
+  let deleteModal = document.getElementById("deleteCategoryModal");
+  let deletemodalLabel = document.getElementById("deletemodalLabel");
+  let reloadPageModal = document.getElementById("reloadPageModal");
 
-document.getElementById("addNewCategory").addEventListener("click", () => {
-  modal.style.display = "flex";
-  input.value = ""; // Eingabefeld leeren
-  input.focus();
-});
+  document.getElementById("addNewCategory").addEventListener("click", () => {
+    modal.style.display = "flex";
+    input.value = ""; // Eingabefeld leeren
+    input.focus();
+  });
 
-document.getElementById("saveCategory").addEventListener("click", () => {
-  let newCategory = input.value.trim();
-  if (newCategory) {
-    console.log("Neue Kategorie:", newCategory);
+  document.getElementById("saveCategory").addEventListener("click", () => {
+    let newCategory = input.value.trim();
+    if (newCategory) {
+      console.log("Neue Kategorie:", newCategory);
+      modal.style.display = "none";
+      // alert(`Kategorie "${newCategory}" wurde angelegt!`);
+
+      var form = document.getElementById("dataForm-categories");
+      console.log("Neue Kategorie Form", form);
+      appendHiddenInput("sf_category_createnew", form, false, newCategory);
+      // Natives submit erzwingen!
+      HTMLFormElement.prototype.submit.call(form);
+    }
+  });
+
+  document.getElementById("cancelCategory").addEventListener("click", () => {
     modal.style.display = "none";
-    // alert(`Kategorie "${newCategory}" wurde angelegt!`);
+  });
 
+  document.getElementById("deleteSelectedCategory").addEventListener("click", () => {
+    let select = document.getElementById('sf_category');
+    let catName = select.selectedOptions.length === 1 ? select.selectedOptions[0].text : undefined;
+    if (catName) {
+      deletemodalLabel.textContent  = "Soll die gewählte Kategorie '" + catName + "' gelöscht werden?";
+      deleteModal.style.display = "flex";
+    }
+  });
+
+  document.getElementById("deleteCategory").addEventListener("click", () => {
+    let select = document.getElementById('sf_category');
+    let catName = select.selectedOptions.length === 1 ? select.value : undefined;
+    if (catName) {
+      deleteModal.style.display = "none";
+      
+      var form = document.getElementById("dataForm-categories");
+      appendHiddenInput("sf_category_remove", form, false, catName);
+      // Natives submit erzwingen!
+      HTMLFormElement.prototype.submit.call(form);
+    }
+  });
+
+  document.getElementById("cancelDeleteCategory").addEventListener("click", () => {
+    deleteModal.style.display = "none";
+  });
+
+  document.getElementById("reloadCurrentPage").addEventListener("click", () => {
+    reloadPageModal.style.display = "flex";
+  });
+
+  document.getElementById("reloadPage").addEventListener("click", () => {
+    reloadPageModal.style.display = "none";
+     
     var form = document.getElementById("dataForm-categories");
-    console.log("Neue Kategorie Form", form);
-    appendHiddenInput("sf_category_createnew", form, false, newCategory);
+    appendHiddenInput("sf_category", form);
+    appendHiddenInput("searchField", form);
+    
     // Natives submit erzwingen!
     HTMLFormElement.prototype.submit.call(form);
-  }
-});
+  });
 
-document.getElementById("cancelCategory").addEventListener("click", () => {
-  modal.style.display = "none";
-});
-
+  document.getElementById("cancelReloadPage").addEventListener("click", () => {
+    reloadPageModal.style.display = "none";
+  });
 
   document.getElementById("dataForm-categories").addEventListener("submit", function (e) {
     const selected = document.getElementById("selectedFiles").options;
@@ -359,8 +427,12 @@ document.getElementById("cancelCategory").addEventListener("click", () => {
       //   value = getInputValueCheckbox(name);
       // }
       hiddenInput.value = value;
-      // console.log("HIDDEN INPUT ", hiddenInput)
-      form.appendChild(hiddenInput);
+       console.log("HIDDEN INPUT ", hiddenInput)
+       console.log("HIDDEN INPUT value '" + value + "'")
+      if(value && value.length > 0)
+      {
+        form.appendChild(hiddenInput);
+      }
   }
 
   function getInputValue(fieldName) {
@@ -449,6 +521,10 @@ document.getElementById("cancelCategory").addEventListener("click", () => {
 
     let select = document.getElementById('sf_category');
     select.disabled = true;
+
+    let reloadCurrentPage = document.getElementById('reloadCurrentPage');
+    console.log("disableCategoryOptions reloadCurrentPage", reloadCurrentPage)
+    reloadCurrentPage.disabled = false;
   }
 
   function getIndexForFileInsert(fileId, targetList) {
@@ -505,22 +581,31 @@ document.getElementById("cancelCategory").addEventListener("click", () => {
 
   function searchParametersChange(){
     let select = document.getElementById('sf_category');
+    const selectedFiles = document.getElementById("selectedFiles");
+    const listLeft = document.getElementById("listLeft");
     let catName = select.selectedOptions.length === 1 ? select.value : undefined;
 
     let applyParameters = catName != null && catName.length > 0;
     let saveBtn = document.getElementsByName("submit");
-     if(catName == null || catName.length == 0) {
+    const deleteCategoryBtn = document.getElementById("deleteSelectedCategory");
+    
+    if(!catName || catName == 0) {
       if (saveBtn.length > 0) {
         saveBtn[0].disabled = true;
         listLeft.disabled = true;
         selectedFiles.disabled = true;
       }
+      if(deleteCategoryBtn){
+        deleteCategoryBtn.disabled = true;
+      }
       return;
     }
 
-    const selectedFiles = document.getElementById("selectedFiles");
-    const listLeft = document.getElementById("listLeft");
 
+    if(deleteCategoryBtn){
+      deleteCategoryBtn.disabled = false;
+    }
+    
     if (saveBtn.length > 0) {
       saveBtn[0].disabled = false;
       listLeft.disabled = false;
@@ -561,7 +646,7 @@ document.getElementById("cancelCategory").addEventListener("click", () => {
     let select = document.getElementById('sf_category');
     let catName = select.selectedOptions.length === 1 ? select.value : undefined;
 
-    if (!catName) {
+    if (!catName || catName == 0) {
       console.log("applyFilter unwirksam, keine Kategorie gewählt");
       return;
     }
@@ -570,7 +655,7 @@ document.getElementById("cancelCategory").addEventListener("click", () => {
     let searchFilter = getInputValue("searchField");
     const keys = Object.keys(sortedFileList);
     
-    select.disabled = searchFilter && searchFilter.length > 0;  
+    // select.disabled = searchFilter && searchFilter.length > 0;  
     
     let selectedFiles = document.getElementById("selectedFiles");
     let selectedValues = Array.from(selectedFiles.options).map(option => parseInt(option.value)); 

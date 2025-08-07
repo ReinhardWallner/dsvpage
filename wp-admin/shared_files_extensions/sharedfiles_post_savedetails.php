@@ -102,7 +102,7 @@ function replaceCategories($categorySlug, $fileIds){
 
 function createNewCategory($newCategoryName){
 	// Prüfen, ob Kategorie schon existiert
-	if (!term_exists($newCategoryName, $taxonomy)) {
+	if (!term_exists($newCategoryName, 'shared-file-category')) {
 		$result = wp_insert_term(
 			$newCategoryName, 		// Name
 			'shared-file-category'  // Taxonomie
@@ -112,12 +112,23 @@ function createNewCategory($newCategoryName){
 			$term_id = $result['term_id'];
 	
 			// Term-Daten abfragen, um z.B. den Slug zu bekommen
-			$term = get_term($term_id, $taxonomy);
+			$term = get_term($term_id, 'shared-file-category');
 			if (!is_wp_error($term)) {
 				return $term->slug;
 			}
 		}
 	}	
+}
+
+function deleteCategory($categoryName){
+	error_log("deleteCategory name " . print_r($categoryName, true));
+	$term = get_term_by('slug', $categoryName, 'shared-file-category');
+	error_log("deleteCategory term" . print_r($categoryName, true));
+	if (!$term || is_wp_error($term)) {
+        return false;
+    }
+	error_log("deleteCategory term" . print_r($term, true));
+	return wp_delete_term($term->term_id, 'shared-file-category');
 }
 
 function saveTags($tagfiltered)

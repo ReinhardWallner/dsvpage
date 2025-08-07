@@ -274,20 +274,23 @@ margin-bottom: .25rem;
   .select-with-button {
     display: flex;
     align-items: center;
-    gap: 8px; /* Abstand zwischen Select und Button */
+    justify-content: space-between;
+    gap: 8px; /* optional Abstand */
   }
   
-  .select-with-button select {
-    flex: 1;
-    min-width: 200px;
-    height: 32px; /* Standardhöhe (abhängig vom Theme) */
+  .select-with-button .button-group-left {
+    display: flex;
+    gap: 8px;
   }
   
-  .select-with-button button {
-    height: 32px;           /* gleiche Höhe wie das Select */
-    padding: 0 12px;        /* nur horizontales Padding für Text */
-    line-height: 1;         /* Text vertikal zentrieren */
-    white-space: nowrap;    /* Kein Umbruch */
+  .select-with-button .button-right {
+    margin-left: auto;
+  }
+
+  #reloadCurrentPage {
+    width: auto;
+    white-space: nowrap;
+    display: inline-block;
   }
 
   /* Kategorie modal */

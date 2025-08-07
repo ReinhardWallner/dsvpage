@@ -58,20 +58,45 @@ $vars = $_POST;
 
 if (gettype($vars) == "array") {
 	// Read post data
-	$categoryCreatenew = $vars["referer_parm_sf_category_createnew"];
-	if($categoryCreatenew){
-		$createdTermSlug = createNewCategory($categoryCreatenew);
+	if(array_key_exists("referer_parm_sf_category_createnew", $vars)){
+		$categoryCreatenew = $vars["referer_parm_sf_category_createnew"];
+		if($categoryCreatenew){
+			error_log("BEFORE createNewCategory " . print_r($categoryCreatenew, true));
+			$createdTermSlug = createNewCategory($categoryCreatenew);
 
-		if($createdTermSlug){
-			$sendback_test = wp_get_referer();
-			$sendback_test = strtok($sendback_test, '?') . "?sf_category=" . $createdTermSlug;
+			if($createdTermSlug){
+				$sendback_test = wp_get_referer();
+				$sendback_test = strtok($sendback_test, '?') . "?sf_category=" . $createdTermSlug;
+			}
 		}
 	}
+	else if(array_key_exists("referer_parm_sf_category_remove", $vars)){
+		$categoryNameToDelete = $vars["referer_parm_sf_category_remove"];
+		error_log("categoryNameToDelete " . print_r($categoryNameToDelete, true));
+		if($categoryNameToDelete){
+			error_log("BEFORE deleteCategory " . print_r($categoryNameToDelete, true));
+			$deletedTermslug = deleteCategory($categoryNameToDelete);
+			error_log("deleteCategory result " . print_r($deletedTermslug, true));
+			if($deletedTermslug){
+				$sendback_test = wp_get_referer();
+				$sendback_test = strtok($sendback_test, '?');
+			}
+		}
+	} 
 	else {
-		$categorySlug = $vars["referer_parm_sf_category"];
-		$selectedFiles = $vars["selectedFiles"];
+		$categorySlug;
+		$selectedFiles;
+		if(array_key_exists("referer_parm_sf_category", $vars)) {
+			$categorySlug = $vars["referer_parm_sf_category"];
+		}
+		if(array_key_exists("selectedFiles", $vars)) {
+			$selectedFiles = $vars["selectedFiles"];
+		}
 
-		replaceCategories($categorySlug, $selectedFiles);
+		if($categorySlug && $selectedFiles){
+			error_log("BEFORE replaceCategories " . print_r($categorySlug, true));
+			replaceCategories($categorySlug, $selectedFiles);
+		}
 	}
 }
 
