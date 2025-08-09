@@ -50,15 +50,14 @@ limit {$limit} offset {$offset}";
 		$pageparams = "order by p.post_title";
 	}
 	$query .= "\n" . $pageparams;
-
+	
 	$wpdb = $parameters["wpdb"];
 	$queryCountResult = $wpdb->get_results($queryCount);
 	$total = array_column($queryCountResult, 'total')[0];
 
 	$queryResult = $wpdb->get_results($query);
 	$ids = array_column($queryResult, 'id');
-
-
+	
 	$data = array();
 	$data["total"] = $total;
 
@@ -101,7 +100,8 @@ limit {$limit} offset {$offset}";
 	if ($total > 0) {
 		$args = array(
 			'post_type' => 'shared_file',
-			'post__in' => $ids
+			'post__in' => $ids,
+			'posts_per_page' => -1 // unbegrenzt
 		);
 
 		$the_query_terms = new WP_Query($args);
@@ -110,7 +110,7 @@ limit {$limit} offset {$offset}";
 			while ($the_query_terms->have_posts()):
 				$the_query_terms->the_post();
 				$file_id = intval(get_the_id());
-
+	
 				$row = array();
 				$row["file_id"] = $file_id;
 				$title = get_the_title();

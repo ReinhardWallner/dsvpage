@@ -231,7 +231,7 @@ for ($i = 0; $i < count($sortedFileList); $i++) {
     $element = $sortedFileList[$i]["fileName"];
     $fileId = $sortedFileList[$i]["file_id"];
     array_push($allTitles, $element);
-    $form .= $fileId . " " . $element . "<br />";
+    // $form .= $fileId . " " . $element . "<br />";
 }
 
 $form .= "</div><div class=\"dual-listbox-wrapper\">
@@ -686,9 +686,8 @@ foreach ($allcategories as $obj) {
   }
 
   //TODO: 
-  // Anlegen neuer Kategorien --> erdledigt
-  // Ausgewählte Kategorie löschen
-
+  // Styling responsive
+  
   // Alle Files importieren
   // Massentests
 </script>

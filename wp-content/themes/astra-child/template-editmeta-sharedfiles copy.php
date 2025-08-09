@@ -228,7 +228,7 @@ if ($search) {
 }
 
 $searchFields .= '</td><td>';
-error_log("CATEGORY IN UPD " . print_r($category, true));
+// error_log("CATEGORY IN UPD " . print_r($category, true));
 // Kategorienauswahl
 $categories_order = 'ASC';
 $argsCategoryCombo = array(
@@ -312,8 +312,7 @@ $parameters = array(
 // Datenabfrage
 $data = queryData($parameters);
 
-$firstIndexData = $data[0];
-if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstIndexData)) {
+if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 	$headRow = $data["headrow"];
 	if ($nurKategorienAnzeigen == true) {
 		$headRow = $data["headrowKat"];
@@ -379,8 +378,11 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"] && is_array($firstI
 	}
 
 	// add rows to output (sorting)
-	for ($i = 0; $i < count($tableRows); $i++) {
-		$row = $tableRows[$i];
+	$sortedKeys = array_keys($tableRows);
+	sort($sortedKeys, SORT_NUMERIC);
+	
+	for ($i = 0; $i < count($sortedKeys); $i++) {
+		$row =$tableRows[$sortedKeys[$i]];
 		$table .= $row;
 	}
 
