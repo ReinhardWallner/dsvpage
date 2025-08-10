@@ -271,13 +271,33 @@ margin-bottom: .25rem;
   }
   
   /* Kategorie button rechts vom select */
+  .shared-files-category-select-container {
+    display: flex;
+    align-items: center; /* vertikal mittig */
+  }
+
+  .shared-files-category-select-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .shared-files-category-select-container label {
+    flex: 0 0 250px; /* fixe Breite, nach Bedarf anpassen */
+  }
+
   .select-with-button {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px; /* optional Abstand */
+    flex: 1; /* nimmt den restlichen Platz ein */
+    margin-left: 4px;
+    padding: 2px 6px; /* kompakter als Standard */
+    width: auto; /* oder feste Breite z. B. 60px, falls gleich groß sein sollen */
   }
   
+  .select-with-button select {
+    margin-right: 8px; /* Abstand zwischen Select und Buttons */
+  }
+/* 
   .select-with-button .button-group-left {
     display: flex;
     gap: 8px;
@@ -285,6 +305,10 @@ margin-bottom: .25rem;
   
   .select-with-button .button-right {
     margin-left: auto;
+  } */
+
+  .select-with-button button {
+    margin-left: 4px; /* kleiner Abstand zwischen den Buttons */
   }
 
   #reloadCurrentPage {
