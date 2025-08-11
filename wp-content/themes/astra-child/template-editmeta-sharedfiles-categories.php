@@ -65,20 +65,9 @@ get_header();
 
 $home = home_url( $wp->request );
 
-$searchFields = '<form
-   id="the-redirect-form-categories" 
-   method="post" 
-   action="' . $home . '" 
-   enctype="multipart/form-data">';
-
-// Tabellenspalten
-$searchFields .= '<div>';
-$searchFields .= '<table style="width: 100%">
-    <colgroup>
-       <col span="1" style="width: 25%;" />
-       <col span="1" style="width: 40%;" />
-       <col span="1" style="width: 35%;" />
-    </colgroup><tr><td>';
+$searchFields = '<form id="categories-form" method="post" action="..." enctype="multipart/form-data">
+<div class="search-row">
+  <div class="search-field">';
 
 // Suchfeld
 if ($search) {
@@ -86,9 +75,9 @@ if ($search) {
 } else {
 	$searchFields .= '<input type="text" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
 }
+$searchFields .= '</div>';
 
-$searchFields .= '</td><td>';
-error_log("CATEGORY IN CAT UPD " . print_r($category, true));
+// error_log("CATEGORY IN CAT UPD " . print_r($category, true));
 // Kategorienauswahl
 $categories_order = 'ASC';
 $argsCategoryCombo = array(
@@ -110,23 +99,21 @@ $endIndex = strpos($categoryDropdowm, ">");
 $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
 
 // Nur Kategorien bearbeiten
-$searchFields .= '<div class="shared-files-category-select-container">';
-$searchFields .= '<label for="sf_category">' . __('Kategorie wählen (inaktiv wenn Suchfilter ein oder Änderungen):', 'shared-files') . '</label>';
+$searchFields .= '<div class="category-select">';
+$searchFields .= '<label for="sf_category">' . esc_html__('Choose category (inactive if search filter inserted or changes exist):', 'astra-child') . '</label>';
 $searchFields .= '<div class="select-with-button">';
 $searchFields .= $categoryDropdowm;
-$searchFields .= ' <button type="button" id="addNewCategory" title="Kategorie hinzufügen" class="select-with-button">Neu</button>';
-$searchFields .= ' <button type="button" id="deleteSelectedCategory" title="Kategorie hinzufügen" disabled="true" class="select-with-button">Löschen</button>';
-$searchFields .= '</div>';
-$searchFields .= '<div></div></td>';
-$searchFields .= '<td style="width: 1%; white-space: nowrap;"><button type="button" id="reloadCurrentPage" title="Änderungen verwerfen" disabled="true" class="button">Änderungen verwerfen</button></td>';
-
-$searchFields .= '</tr></table></div></form>';
+$searchFields .= ' <button type="button" id="addNewCategory" title="' . esc_html__('Create category', 'astra-child') . '" class="small-button">' . esc_html__('Create', 'astra-child') . '</button>';
+$searchFields .= ' <button type="button" id="deleteSelectedCategory" title="' . esc_html__('Delete category', 'astra-child') . '" disabled="true" class="small-button">' . esc_html__('Delete', 'astra-child') . '</button>';
+$searchFields .= '</div></div>';
+$searchFields .= '<div class="reset-button"><button type="button" id="reloadCurrentPage" title="' . esc_html__('Discard changes', 'astra-child') . '" disabled="true" class="button">' . esc_html__('Discard changes', 'astra-child') . '</button></div>';
+$searchFields .= '</div></form>';
 
 $adminUrl = get_admin_url();
 $postUrl = $adminUrl . 'shared_files_extensions/sharedfiles_category_post.php';
 
 $form = '<form method="post" name="dataForm-categories" id="dataForm-categories" enctype="application/x-www-form-urlencoded" action="' . $postUrl . '">';
-$form .= '<div class="table-scroll-wrapper">';
+
 
 // Datenabfrage
 // $parametersAll = array(
@@ -220,9 +207,9 @@ foreach ($outerArrayKeys as $outerKey) {
 }
 // error_log("categoryFileMapping End " . print_r($categoryFileMapping, true));
 
-echo '<div id="cpt-update-wrapper">';
-echo $searchFields;
+ echo $searchFields;
 
+// error_log($searchFields);
 
 // sort titles
 $allTitles = [];
@@ -234,27 +221,28 @@ for ($i = 0; $i < count($sortedFileList); $i++) {
     // $form .= $fileId . " " . $element . "<br />";
 }
 
-$form .= "</div><div class=\"dual-listbox-wrapper\">
+$form .= "<div class=\"dual-listbox-wrapper\">
 <div class=\"dual-listbox\">
   <!-- Linke Liste -->
   <div class=\"dual-list\">
-    <label>Verfügbare Einträge</label>
+    <label>" . esc_html__('Available titles', 'astra-child') . "</label>
     <select id=\"listLeft\" multiple disabled='true' ondblclick='leftListhandleDoubleClick()'></select>
   </div>
 
   <!-- Buttons -->
   <div class=\"dual-buttons\">
-  <button type='button' class='button button-primary' onclick='moveSelected(\"listLeft\",\"selectedFiles\")'>→</button>
-    <button type='button' class='button' onclick='moveSelected(\"selectedFiles\",\"listLeft\")'>←</button>
+  <button type='button' class='button button-primary' id=\"appendEntryButton\" disabled=\"true\" onclick='moveSelected(\"listLeft\",\"selectedFiles\")'>→</button>
+    <button type='button' class='button' id=\"releaseEntryButton\" disabled=\"true\" onclick='moveSelected(\"selectedFiles\",\"listLeft\")'>←</button>
   </div>
 
   <!-- Rechte Liste -->
   <div class=\"dual-list\">
-    <label>Zugeordnete Einträge</label>
+    <label>" . esc_html__('Mapped titles', 'astra-child') . "</label>
     <select id=\"selectedFiles\" name=\"selectedFiles[]\" multiple disabled='true' ondblclick='rightListhandleDoubleClick()'></select>
   </div>
 </div>
 </div>";
+
 
 // error_log("ALL DATA allTitles " . print_r($allTitles, true));
 
@@ -263,8 +251,7 @@ $form .= '<input type="submit" name="submit" disabled="true" value="' . esc_html
 $form .= '</form>';
 
 echo $form;
-
-echo '</div>';
+// error_log($form);
 
 echo '<div id="newCategoryModal" class="modal">
 <div class="modal-content">
@@ -313,6 +300,7 @@ foreach ($allcategories as $obj) {
 	 * Set Caret position in search field
 	 */
 	function onloadInternally() {
+    console.log("CAT onloadInternally", selectedCategory)
     if(selectedCategory){
       let select = document.getElementById('sf_category');
       if(select)
@@ -392,7 +380,8 @@ foreach ($allcategories as $obj) {
     var form = document.getElementById("dataForm-categories");
     appendHiddenInput("sf_category", form);
     appendHiddenInput("searchField", form);
-    
+    appendHiddenInput("reloadPage", form, null, "true")
+    console.log("reloadPage before submit", form)
     // Natives submit erzwingen!
     HTMLFormElement.prototype.submit.call(form);
   });
@@ -402,8 +391,9 @@ foreach ($allcategories as $obj) {
   });
 
   document.getElementById("dataForm-categories").addEventListener("submit", function (e) {
+    console.log("NORMAL SUBMIT before submit", e)
     const selected = document.getElementById("selectedFiles").options;
-      // e.preventDefault();
+       //e.preventDefault();
     for (let option of selected) {
       option.selected = true; // Alle Optionen als ausgewählt markieren
     }
@@ -428,7 +418,7 @@ foreach ($allcategories as $obj) {
       // }
       hiddenInput.value = value;
        console.log("HIDDEN INPUT ", hiddenInput)
-       console.log("HIDDEN INPUT value '" + value + "'")
+       console.log("HIDDEN INPUT value '" + value + "'", value.length)
       if(value && value.length > 0)
       {
         form.appendChild(hiddenInput);
@@ -594,6 +584,9 @@ foreach ($allcategories as $obj) {
         saveBtn[0].disabled = true;
         listLeft.disabled = true;
         selectedFiles.disabled = true;
+        appendEntryButton.disabled = true;
+        appendEntryButton.disabled = true;
+        releaseEntryButton.disabled = true;
       }
       if(deleteCategoryBtn){
         deleteCategoryBtn.disabled = true;
@@ -610,6 +603,8 @@ foreach ($allcategories as $obj) {
       saveBtn[0].disabled = false;
       listLeft.disabled = false;
       selectedFiles.disabled = false;
+      appendEntryButton.disabled = false;
+      releaseEntryButton.disabled = false;
     }
 
    
@@ -646,10 +641,10 @@ foreach ($allcategories as $obj) {
     let select = document.getElementById('sf_category');
     let catName = select.selectedOptions.length === 1 ? select.value : undefined;
 
-    if (!catName || catName == 0) {
-      console.log("applyFilter unwirksam, keine Kategorie gewählt");
-      return;
-    }
+    // if (!catName || catName == 0) {
+    //   console.log("applyFilter unwirksam, keine Kategorie gewählt");
+    //   return;
+    // }
 
    
     let searchFilter = getInputValue("searchField");

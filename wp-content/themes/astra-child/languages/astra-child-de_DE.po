@@ -39,3 +39,27 @@ msgstr "Excel(csv) exportieren"
 
 msgid "Title"
 msgstr "Titel"
+
+msgid "Choose category (inactive if search filter inserted or changes exist):"
+msgstr "Kategorie wählen (inaktiv wenn Suchfilter ein oder Änderungen):"
+
+msgid "Create category"
+msgstr "Kategorie anlegen"
+
+msgid "Delete category"
+msgstr "Kategorie löschen"
+
+msgid "Available titles"
+msgstr "Verfügbare Einträge"
+
+msgid "Mapped titles"
+msgstr "Zugeordnete Einträge"
+
+msgid "Create"
+msgstr "Neu"
+
+msgid "Delete"
+msgstr "Löschen"
+
+msgid "Discard changes"
+msgstr "Änderungen verwerfen"
