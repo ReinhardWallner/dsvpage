@@ -124,9 +124,14 @@ if (gettype($vars) == "array") {
 	Beschreibung Description
 	Speichern Save
 
-	Kategorie wählen (inaktiv wenn Suchfilter ein):
-	Verfügbare Einträge
-	Zugeordnete Einträge
+	Choose category (inactive if search filter inserted or changes exist):
+	Kategorie wählen (inaktiv wenn Suchfilter ein oder Änderungen):
+	Create category Kategorie anlegen
+	Delete category Kategorie löschen
+	Available titles Verfügbare Einträge
+	Mapped titles Zugeordnete Einträge
+	Create Neu 
+	Delete Löschen
 
 
 ASTRA mit Styling: Alle Funtionen testen

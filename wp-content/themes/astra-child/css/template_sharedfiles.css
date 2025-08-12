@@ -163,6 +163,18 @@ color: white;
 border-color: #005baa;
 }	
 
+/* Container für Buttons nebeneinander */
+.button-group {
+  display: flex;
+  gap: 10px; /* Abstand zwischen Buttons */
+  margin-left: 20px; /* Abstand links von den Buttons */
+}
+
+/* Buttons optional etwas angleichen */
+.button-group button {
+  white-space: nowrap; /* verhindert Zeilenumbruch im Buttontext */
+}
+
 
 /** Button-Formular Border entfernen */
 #the-redirect-form,
