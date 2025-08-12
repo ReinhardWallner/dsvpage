@@ -682,6 +682,9 @@ foreach ($allcategories as $obj) {
 
   //TODO: 
   // Styling responsive
+
+  // Einzelnes Feld bearbeiten
+  // Keine Kategorien bearbeiten
   
   // Alle Files importieren
   // Massentests

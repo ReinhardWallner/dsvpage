@@ -279,7 +279,7 @@ $adminUrl = get_admin_url();
 $postUrl = $adminUrl . 'shared_files_extensions/sharedfiles_post.php';
 
 $table = '<form method="post" name="dataForm" id="dataForm" enctype="application/x-www-form-urlencoded" action="' . $postUrl . '">';
-$table .= '<div class="table-scroll-wrapper"><table name="dataTable" style="margin: 10px;">';
+$table .= '<div class="table-scroll-wrapper">';
 
 $pagination = "";
 
@@ -306,11 +306,11 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 	}
 
 	// Kopfzeile
-	$table .= "<tr>";
+	$table .= '<div class="row header">';
 	foreach ($headRow as $element) {
-		$table .= "<td>" . $element . "</td>";
+		$table .= '<div class="cell">' . $element . '</div>';
 	}
-	$table .= "</tr>";
+	$table .= "</div>";
 
 	$outerArrayKeys = array_keys(($data));
 	$dataArrayKeys = $data["keys"];
@@ -347,7 +347,8 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 
 						$file_id = $element;
 						$row = "";
-						$row .= "<tr><td>" . $file_id . "</td>";
+						$row .= '<div class="row">
+						<div class="cell">' . $file_id . '</div>';
 					} else if ($dataKey == "title") {
 						addTitleField($row, $file_id, $element, $inputArray, $isReadonlyUser);
 					} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
@@ -358,7 +359,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 				}
 			}
 
-			$row .= "</tr>";
+			$row .= "</div>";
 
 			$tableRows[$outerKey] = $row;
 		}
@@ -374,7 +375,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 	}
 
 	// Submit Button
-	$table .= "</table></div>";
+	$table .= "</div>";
 	
 	if($isReadonlyUser == false) {
 		$table .= '<input type="submit" name="submit" disabled="true" value="' . esc_html__('Save', 'shared-files') . '"></input>';

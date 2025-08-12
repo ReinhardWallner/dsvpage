@@ -46,70 +46,49 @@ select[aria-disabled="true"] {
 
 
 /** Stylings Tabelle mit Scrollbar */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-td div.justify-right {
-    /* there is a shorthand, TODO! 🙂 */
-    margin: auto 0 auto auto;
-}
-
-/* Wrapper für die Tabelle */
 .table-scroll-wrapper {
-    display: block;
-    overflow-x: auto;
-    overflow-y: hidden;
-    max-width: 100%;
-    white-space: nowrap;
-    scrollbar-width: auto;
-    /* Firefox */
-    -ms-overflow-style: auto;
-    /* IE 10+ */
+  overflow-x: auto;       /* Scrollbar bei Überbreite */
+  border: 1px solid #ccc;
 }
 
-/* Tabelle optional stylen */
-.table-scroll-wrapper table {
-    border-collapse: collapse;
-    width: 100%;
-    /* Mindestbreite für Scroll-Effekt */
+.row {
+  display: flex;          /* Zeilen als Flexbox */
+  min-width: max-content; /* Breite richtet sich nach Inhalt */
+  border-bottom: 1px solid #ddd;
 }
 
-.table-scroll-wrapper table th,
-.table-scroll-wrapper table td {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    text-align: left;
+.row.header {
+  font-weight: bold;
+  background: #f7f7f7;
 }
 
-.table-scroll-wrapper input[type="text"] {
-    max-width: 100%;
-    min-width: 150px;
-    box-sizing: border-box;
+.cell {
+  flex: 0 0 200px;         /* feste Spaltenbreite */
+  padding: 6px;
+  box-sizing: border-box;
+  border-right: 1px solid #eee;
+}
+
+.cell:last-child {
+  border-right: none;
+}
+
+.cell input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cell input[type="checkbox"] {
+  transform: scale(1.2);
 }
 
 /* Alternierende Zeilenfarbe für Tabelle */
-.table-scroll-wrapper table tr:nth-child(even) {
-    background-color: #f5f5f5;
-  }
-  
-  .table-scroll-wrapper table tr:nth-child(odd) {
-    background-color: #ffffff;
-  }
-  
-  /* Kopfzeile hervorheben (erste Zeile) */
-  .table-scroll-wrapper table tr:first-child {
-    background-color: #dce3e8;
-    font-weight: bold;
-  }
-
-/** Table Cell style reduce height */
-td {
-    vertical-align: middle;
-    padding: 6px 8px;
-  }
+.row:not(.header):nth-child(even) {
+  background-color: #f9f9f9;
+}
+.row:not(.header):nth-child(odd) {
+  background-color: #ffffff;
+}
 
 
 
