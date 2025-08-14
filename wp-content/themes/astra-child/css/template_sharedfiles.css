@@ -261,6 +261,11 @@ margin-bottom: .25rem;
     text-align: center;
   }
   
+  .category_wrapper {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
   /* Kategorie button rechts vom select */
   .shared-files-category-select-container {
     display: flex;
@@ -357,7 +362,7 @@ margin-bottom: .25rem;
   }
   
   .search-field {
-    flex: 1 1 25%;
+    flex: 1 1 10%;
   }
   
   .category-select {
@@ -367,8 +372,8 @@ margin-bottom: .25rem;
     align-items: center;
     min-width: 0; /* verhindert, dass es den Button verdrängt */
     margin-top: auto;
-  margin-bottom: auto;
-
+    margin-bottom: auto;
+    margin-right: 50px;
 }
   
   .select-with-button {

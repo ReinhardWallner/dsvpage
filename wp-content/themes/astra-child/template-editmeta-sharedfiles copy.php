@@ -40,7 +40,7 @@ include  $sharedfilefolder . "sharedfiles_controlhelpers.php";
 
  // start attention: This code has before get_header section!!!
 
-$posts_per_page = 3;
+$posts_per_page = 20;
 $paged = 1;
 $s = get_option('shared_files_settings');
 
@@ -97,6 +97,13 @@ if (isset($_POST['nurKategorienAnzeigen']) && $_POST['nurKategorienAnzeigen'] ==
 	$nurKategorienAnzeigen = true;
 }
 
+$onlyModifySingleField = null;
+if (isset($_POST['onlyModifySingleField']) != null) {
+	$onlyModifySingleField = $_POST['onlyModifySingleField'];
+} else if (isset($_GET['onlyModifySingleField']) != null ) {
+	$onlyModifySingleField = $_POST['onlyModifySingleField'];
+}
+
 $excel_export = false;
 
 if (isset($_POST['doExcelExport']) && $_POST["doExcelExport"] == "true") {
@@ -119,11 +126,12 @@ if ($excel_export == true) {
 		"allcategories" => $allcategories,
 		"tag_slug" => $tag_slug,
 		"settings" => $s,
-		"nurKategorienAnzeigen" => $nurKategorienAnzeigen
+		"nurKategorienAnzeigen" => $nurKategorienAnzeigen,
+		"onlyModifySingleField"  => $onlyModifySingleField
 	);
 
 	$data = queryData($parameters);
-	downloadExcelData($data, $fileName, $nurKategorienAnzeigen);
+	downloadExcelData($data, $fileName, $nurKategorienAnzeigen, $onlyModifySingleField);
 	return;
 }
 
@@ -240,25 +248,55 @@ $categoryDropdowm = wp_dropdown_categories($argsCategoryCombo);
 $endIndex = strpos($categoryDropdowm, ">");
 $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
 
-// Nur Kategorien bearbeiten
 $searchFields .= '<div class="category-select">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div>';
+
+// Nur Kategorien bearbeiten
 $nurKategorienText = esc_html__('Modify categories only', 'astra-child');
 
 if ($isReadonlyUser == true){
 	$nurKategorienText = esc_html__('Show only categories', 'astra-child');
 }
+
 if ($nurKategorienAnzeigen == true) {
 	$searchFields .= '<div><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></div>';
 } else {
 	$searchFields .= '<div><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></div>';
 }
 
+
+$searchFields .= '<div>';
+$searchFields .= '<select name="onlyModifySingleField" id="onlyModifySingleField" class="shared-files-category-select select_v2" onchange="onSelectSingleFieldChange()">';
+$searchFields .= '<option class="level-0" id="notselected" value="notselected">' . esc_html__('Select single field to modify', 'astra-child') . '</option>';
+if($onlyModifySingleField != null && $onlyModifySingleField == "description"){
+	$searchFields .= '<option class="level-0" id="description" value="description" selected>' . esc_html__('Description', 'shared-files') . '</option>';
+} else {
+	$searchFields .= '<option class="level-0" id="description" value="description">' . esc_html__('Description', 'shared-files') . '</option>';
+}
+
+for ($n = 1; $n < $custom_fields_cnt; $n++) {
+	$key = 'file_upload_custom_field_' . $n;
+	if (isset($s[$key]) && $cf_title = sanitize_text_field($s[$key])) {
+		if($onlyModifySingleField != null && $onlyModifySingleField == $key){
+			$searchFields .= '<option class="level-0" id="' . $key . '" value="' . $key . '" selected>' . $cf_title . '</option>';
+		} else {
+			$searchFields .= '<option class="level-0" id="' . $key . '" value="' . $key . '">' . $cf_title . '</option>';
+		}
+	}
+}
+if($onlyModifySingleField != null && $onlyModifySingleField == "tags"){
+	$searchFields .= '<option class="level-0" id="tags" value="tags" selected>' . esc_html__('Tags', 'shared-files') . '</option>';
+} else {
+	$searchFields .= '<option class="level-0" id="tags" value="tags">' . esc_html__('Tags', 'shared-files') . '</option>';
+}
+$searchFields .= '</select></div>';
+
+// error_log("s: " . print_r($s,true));
 //error_log("posts_per_page: " . print_r($posts_per_page,true));
 // Zeilen pro Seite
-$searchFields .= '<div style="display: flex; align-items: center; gap: 6px; ">';
-$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 100px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
+$searchFields .= '<div style="display: flex; align-items: center; gap: 6px; margin-left: 30px;">';
+$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 70px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
 $searchFields .= '</div>';
 
 // Download ZIP
@@ -293,16 +331,22 @@ $parameters = array(
 	"allcategories" => $allcategories,
 	"tag_slug" => $tag_slug,
 	"settings" => $s,
-	"nurKategorienAnzeigen" => $nurKategorienAnzeigen
+	"nurKategorienAnzeigen" => $nurKategorienAnzeigen,
+	"onlyModifySingleField"  => $onlyModifySingleField
 );
 
+// error_log("searchString: " . $search);
 // Datenabfrage
 $data = queryData($parameters);
+//  error_log("data result " . print_r($data, true));
 
 if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 	$headRow = $data["headrow"];
 	if ($nurKategorienAnzeigen == true) {
 		$headRow = $data["headrowKat"];
+	}
+	if($onlyModifySingleField != null && $onlyModifySingleField != "notselected"){
+		$headRow = $data["headRowSingleFields"];
 	}
 
 	// Kopfzeile
@@ -318,7 +362,9 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 	// Datenzeilen
 	$rowIndex = 0;
 	foreach ($outerArrayKeys as $outerKey) {
-		if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
+		if ($outerKey != "keys" && $outerKey != "headrow" && 
+			$outerKey != "headrowKat" && $outerKey != "headRowSingleFields" && 
+			$outerKey != "args" && $outerKey != "total") {
 			$dataRowArray = $data[$outerKey];
 			$row = "";
 			$file_id = null;
@@ -330,8 +376,14 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 					$element = $dataRowArray[$firstKey][$secondKey];
 
 					if ($firstKey == "custom_field" && $nurKategorienAnzeigen == false) {
-						addCustomFieldField($row, $file_id, $secondKey, $element, $inputArray, $isReadonlyUser);
-					} else if ($firstKey == "category") {
+						if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
+							($onlyModifySingleField != null && 
+							str_starts_with($onlyModifySingleField, "file_upload_custom_field_") &&
+							str_ends_with($onlyModifySingleField, $secondKey))) {
+							addCustomFieldField($row, $file_id, $secondKey, $element, $inputArray, $isReadonlyUser);
+						}
+					} else if ($firstKey == "category" &&
+						($onlyModifySingleField == null || $onlyModifySingleField == "notselected")) {
 						$catValue = "";
 						if ($element == "Ja") {
 							$catValue = "on";
@@ -352,9 +404,17 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 					} else if ($dataKey == "title") {
 						addTitleField($row, $file_id, $element, $inputArray, $isReadonlyUser);
 					} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
-						addDescriptionField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+						if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
+						($onlyModifySingleField != null && 
+						str_starts_with($onlyModifySingleField, "description"))) {						
+							addDescriptionField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+						}
 					} else if ($dataKey == "tags" && $nurKategorienAnzeigen == false) {
-						addTagsField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+						if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
+						($onlyModifySingleField != null && 
+						str_starts_with($onlyModifySingleField, "tags"))) {	
+							addTagsField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+						}
 					}
 				}
 			}
@@ -413,6 +473,9 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 	if ($nurKategorienAnzeigen) {
 		$pargs .= '&nurKategorienAnzeigen=on';
 	}
+	if($onlyModifySingleField != null){
+		$pargs .= '&onlyModifySingleField=' . $onlyModifySingleField;
+	}
 	if ($posts_per_page) {
 		$pargs .= '&elementsPerPage=' . $posts_per_page;
 	}
@@ -430,7 +493,7 @@ echo '<div id="cpt-update-wrapper">';
 echo $searchFields . $table . $pagination;
 echo '</div>';
 
-//error_log($searchFields . $table . $pagination);
+error_log($searchFields . $table . $pagination);
 
 // do_action( 'hestia_page_builder_blank_after_content' );
 
@@ -467,7 +530,7 @@ wp_reset_postdata();
 		appendHiddenInput("sf_category", form);
 		appendHiddenInput("elementsPerPage", form);
 		appendHiddenInput("nurKategorienAnzeigen", form, "on");
-		});
+	});
 
 	function appendHiddenInput(name, form, ischeckbox){
 		const hiddenInput = document.createElement("input");
@@ -588,6 +651,10 @@ wp_reset_postdata();
 		if (nurKategorienAnzeigen.length > 0) {
 			nurKategorienAnzeigen[0].disabled = changesExists == true;
 		}
+		let onlyModifySingleField = document.getElementsByName("onlyModifySingleField");
+		if (onlyModifySingleField.length > 0) {
+			onlyModifySingleField[0].disabled = changesExists == true;
+		}
 		let elementsPerPage = document.getElementsByName("elementsPerPage");
 		if (elementsPerPage.length > 0) {
 			elementsPerPage[0].disabled = changesExists == true;
@@ -707,8 +774,19 @@ wp_reset_postdata();
 	function onCategoryChange() {
 		document.getElementById('the-redirect-form').submit();
 	}
+	function onSelectSingleFieldChange(){
+		document.getElementById('nurKategorienAnzeigen').checked = false;
 
+		document.getElementById('the-redirect-form').submit();
+	}
 	function onNurKategorienAnzeigenClick() {
+		const onlyModifySingleField =document.getElementById('onlyModifySingleField');
+
+		// Alle Optionen deaktivieren
+		for (const option of onlyModifySingleField.options) {
+			option.disabled = true;
+		}
+
 		document.getElementById('the-redirect-form').submit();
 	}
 

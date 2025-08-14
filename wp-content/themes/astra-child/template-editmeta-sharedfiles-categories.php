@@ -165,7 +165,9 @@ foreach ($allcategories as $category1) {
 // Get titles
 $sortedFileList = [];
 foreach ($outerArrayKeys as $outerKey) {
-    if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
+    if ($outerKey != "keys" && $outerKey != "headrow" && 
+      $outerKey != "headrowKat" && $outerKey != "headRowSingleFields" && 
+      $outerKey != "args" && $outerKey != "total") {
         $dataRowArray = $dataSearch[$outerKey];
         $file_id = null;
         foreach ($dataArrayKeys as $dataKey) {
@@ -683,8 +685,13 @@ foreach ($allcategories as $obj) {
   //TODO: 
   // Styling responsive
 
-  // Einzelnes Feld bearbeiten
-  // Keine Kategorien bearbeiten
+  // Einzelnes Feld bearbeiten, inkl. excel download und paginations
+  // --> Keine Kategorien bearbeiten?
+
+  // Prüfen aller GET-Parameter in $pargs auch mitgesendet und testen!
+
+  // Änderungen verwerfen in der Bearbeitungsmaske
+  // --> Zweite Zeile für "Nicht-Such-Felder" und Buttons
   
   // Alle Files importieren
   // Massentests
