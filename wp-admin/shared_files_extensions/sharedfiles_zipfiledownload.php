@@ -16,7 +16,9 @@ function createzipfile($data, $path, $fileName)
 		}
 
 		foreach ($outerArrayKeys as $outerKey) {
-			if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
+			if ($outerKey != "keys" && $outerKey != "headrow" && 
+				$outerKey != "headrowKat" && $outerKey != "headRowSingleFields" && 
+				$outerKey != "args" && $outerKey != "total") {
 				$dataRowArray = $data[$outerKey];
 				$fullPath = realpath($path . DIRECTORY_SEPARATOR . $dataRowArray["filename"]);
 				if ($fullPath && file_exists($fullPath)) {

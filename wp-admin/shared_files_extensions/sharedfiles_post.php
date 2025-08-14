@@ -133,6 +133,11 @@ if (gettype($vars) == "array") {
 	Create Neu 
 	Delete Löschen
 
+	Only modify single field: Einzelnes Feld ändern:
+	Only show single field: Einzelnes Feld anzeigen:
+
+	Select single field to modify Einzelnes Feld zur Bearbeitung auswählen
+
 
 ASTRA mit Styling: Alle Funtionen testen
 funktioniert grundsätzlich, einiges Styling auch schon gemacht

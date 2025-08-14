@@ -3,6 +3,7 @@
 function queryData($parameters)
 {
 	$nurKategorienAnzeigen = $parameters["nurKategorienAnzeigen"];
+	$onlyModifySingleField = $parameters["onlyModifySingleField"];
 
 	$select = "SELECT distinct p.id, p.post_title
 FROM `wp_posts` p
@@ -20,14 +21,32 @@ where p.post_type='shared_file'";
 	if ($parameters["search"]) {
 		if ($nurKategorienAnzeigen == true) {
 			$filter = "and 
-	(p.post_title like '%{$parameters["search"]}%')";
+			(p.post_title like '%{$parameters["search"]}%')";
+		} else if($onlyModifySingleField != null && $onlyModifySingleField != "notselected") {
+			if(str_starts_with($onlyModifySingleField, "file_upload_custom_field_")){
+				$rest = str_replace("file_upload_custom_field_", "_sf_file_upload_cf_", $onlyModifySingleField);
+				$filter = "and 
+				(p.post_title like '%{$parameters["search"]}%' 
+				or (m_cf.meta_key='{$rest}' and m_cf.meta_value like '%{$parameters["search"]}%')
+				)";			
+			} else if(str_starts_with($onlyModifySingleField, 'description')){
+				$filter = "and 
+				(p.post_title like '%{$parameters["search"]}%' 
+				or m_desc.meta_value like '%{$parameters["search"]}%'
+				)";	
+			} else if(str_starts_with($onlyModifySingleField, 'tags')){
+				$filter = "and 
+				(p.post_title like '%{$parameters["search"]}%' 
+				or (t_tag.name like '%{$parameters["search"]}%' and tax_tag.taxonomy='shared-file-tag')
+				)";	
+			}				
 		} else {
 			$filter = "and 
-	(p.post_title like '%{$parameters["search"]}%' 
-	or (t_tag.name like '%{$parameters["search"]}%' and tax_tag.taxonomy='shared-file-tag')
-	or m_desc.meta_value like '%{$parameters["search"]}%'
-	or m_cf.meta_value like '%{$parameters["search"]}%'
-	)";
+			(p.post_title like '%{$parameters["search"]}%' 
+			or (t_tag.name like '%{$parameters["search"]}%' and tax_tag.taxonomy='shared-file-tag')
+			or m_desc.meta_value like '%{$parameters["search"]}%'
+			or m_cf.meta_value like '%{$parameters["search"]}%'
+			)";			
 		}
 	}
 
@@ -63,11 +82,15 @@ limit {$limit} offset {$offset}";
 
 	$headRow = array();
 	$headRowKat = array();
+	$headRowSingleFields = array();
 	array_push($headRow, "Id");
 	array_push($headRowKat, "Id");
+	array_push($headRowSingleFields, "Id");
 	array_push($headRow, esc_html__('Title', 'shared-files'));
-	array_push($headRowKat, esc_html__('Title', 'astra-child'));
+	array_push($headRowKat, esc_html__('Title', 'shared-files'));
+	array_push($headRowSingleFields, esc_html__('Title', 'shared-files'));
 	array_push($headRow, esc_html__('Description', 'shared-files'));
+		
 	$keys = array(0 => "file_id", 1 => "title", 2 => "description");
 
 	$custom_fields_cnt = $parameters["custom_fields_cnt"];
@@ -78,6 +101,12 @@ limit {$limit} offset {$offset}";
 		if (isset($s['file_upload_custom_field_' . $n]) && $cf_title = sanitize_text_field($s['file_upload_custom_field_' . $n])) {
 			array_push($headRow, $cf_title);
 			array_push($keys, array("custom_field" => $n));
+
+			if($onlyModifySingleField != null && $onlyModifySingleField != "notselected" &&
+				str_starts_with($onlyModifySingleField, "file_upload_custom_field_") &&
+				str_ends_with($onlyModifySingleField, $n)) {
+				array_push($headRowSingleFields, $cf_title);
+			}
 		}
 	}
 
@@ -93,8 +122,18 @@ limit {$limit} offset {$offset}";
 		array_push($keys, array("category" => $category->term_id));
 	}
 
+	if($onlyModifySingleField != null && $onlyModifySingleField != "notselected") {
+		if(str_starts_with($onlyModifySingleField, 'description')){
+			array_push($headRowSingleFields, esc_html__('Description', 'shared-files'));
+		} else if(str_starts_with($onlyModifySingleField, 'tags')){
+			array_push($headRowSingleFields, esc_html__('Tags', 'shared-files'));
+		}	
+	}
+
 	$data["headrow"] = $headRow;
 	$data["headrowKat"] = $headRowKat;
+	$data["headRowSingleFields"] = $headRowSingleFields;
+	
 	$data["keys"] = $keys;
 
 	if ($total > 0) {

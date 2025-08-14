@@ -1,6 +1,6 @@
 <?php
 
-function downloadExcelData($data, $fileName, $nurKategorienAnzeigen)
+function downloadExcelData($data, $fileName, $nurKategorienAnzeigen, $onlyModifySingleField)
 {
 	header("Content-Type: text/csv");
 	header("Content-Disposition: attachment; filename=\"$fileName\"");
@@ -10,18 +10,23 @@ function downloadExcelData($data, $fileName, $nurKategorienAnzeigen)
 		$dataArrayKeys = $data["keys"];
 		$headRow = $data["headrow"];
 		$headRowKat = $data["headrowKat"];
+		$headRowSingleFields = $data["headRowSingleFields"];
 
 		if($nurKategorienAnzeigen == true) {
 			addHeadRow($headRowKat);
+		} else if($onlyModifySingleField != null && $onlyModifySingleField != "notselected") {
+			addHeadRow($headRowSingleFields);
 		} else {
 			addHeadRow($headRow);
 		}
 
 		asort($outerArrayKeys);
 		foreach ($outerArrayKeys as $outerKey) {
-			if ($outerKey != "keys" && $outerKey != "headrow" && $outerKey != "headrowKat" && $outerKey != "args" && $outerKey != "total") {
+			if ($outerKey != "keys" && $outerKey != "headrow" && 
+				$outerKey != "headrowKat"  && $outerKey != "headRowSingleFields" && 
+				$outerKey != "args" && $outerKey != "total") {
 				$dataRowArray = $data[$outerKey];
-				addDataRow($dataRowArray, $dataArrayKeys, $nurKategorienAnzeigen);
+				addDataRow($dataRowArray, $dataArrayKeys, $nurKategorienAnzeigen, $onlyModifySingleField);
 			}
 		}
 	}
@@ -36,7 +41,7 @@ function addHeadRow($headRow)
 	echo "\n";
 }
 
-function addDataRow($dataRowArray, $dataArrayKeys, $nurKategorienAnzeigen)
+function addDataRow($dataRowArray, $dataArrayKeys, $nurKategorienAnzeigen, $onlyModifySingleField)
 {
 	foreach ($dataArrayKeys as $dataKey) {
 		$element = null;
@@ -48,13 +53,29 @@ function addDataRow($dataRowArray, $dataArrayKeys, $nurKategorienAnzeigen)
 					continue;
 			}
 
-			$element = $dataRowArray[$firstKey][$secondKey];
+			if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
+				($onlyModifySingleField != null && $firstKey != "category" &&
+				str_starts_with($onlyModifySingleField, "file_upload_custom_field_") &&
+				str_ends_with($onlyModifySingleField, $secondKey))) {
+				$element = $dataRowArray[$firstKey][$secondKey];
+			} else {
+				continue;
+			}
 		} else {
 			if ($nurKategorienAnzeigen == true && ($dataKey == "description" || $dataKey == "tags")) {
 				continue;
 			}
 
-			$element = $dataRowArray[$dataKey];
+			if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") || 
+				$dataKey == "file_id" || $dataKey == "title" ||
+				($onlyModifySingleField != null && $dataKey == "description" &&
+				str_starts_with($onlyModifySingleField, "description") ||
+				($onlyModifySingleField != null && $dataKey == "tags" &&
+				str_starts_with($onlyModifySingleField, "tags")))) {	
+				$element = $dataRowArray[$dataKey];
+			} else {
+				continue;
+			}
 		}
 
 		// encoding ensures german "Umlaute"
