@@ -205,7 +205,6 @@ text-align: center;
 }
 
 /* Optional: Buttons und Inputs innerhalb der Formulare auch auf Breite bringen */
-#cpt-update-wrapper input,
 #cpt-update-wrapper select,
 #cpt-update-wrapper button,
 #cpt-update-wrapper textarea {
@@ -298,15 +297,6 @@ margin-bottom: .25rem;
   .select-with-button select {
     margin-right: 8px; /* Abstand zwischen Select und Buttons */
   }
-/* 
-  .select-with-button .button-group-left {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .select-with-button .button-right {
-    margin-left: auto;
-  } */
 
   .select-with-button button {
     margin-left: 4px; /* kleiner Abstand zwischen den Buttons */
@@ -329,52 +319,139 @@ margin-bottom: .25rem;
     max-width: 100%;
   }
 
-  /* #the-redirect-form-categories {
-    display: flex;
-    align-items: center;
-    gap: 1rem;          
-    margin-bottom: 1rem; 
-  } */
+  /* Styles for Modify template */
+  .search-row-top,
+  .search-row-bottom {
+      display: flex !important;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      width: auto !important;      /* override 100% width */
+  }
 
-  
-  .search-row {
+  /* Eingabeelemente in diesen Zeilen nicht auf volle Breite */
+  .search-row-top button {
+      width: auto !important;
+      max-width: none !important;
+  }
+
+  .search-row-top .search-field {
+    flex: 2 1 200px; /* deutlich mehr Platz für die Suche */
+    max-width: 400px;
+  }
+
+  .search-row-top .category-select {
+      flex: 0 0 250px;
+  }
+
+  .search-input {
+    padding-top: 4px !important;
+    padding-bottom: 3px !important;
+  }
+
+  .search-row-bottom {
     display: flex;
-    flex-wrap: wrap; /* erlaubt Umbrüche */
-    gap: 1rem;
-    align-items: center; 
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px; /* Abstand zwischen den Blöcken */
   }
   
-  @media (max-width: 600px) {
+  .search-row-bottom > * {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .option-checkbox,
+  .option-select {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .option-select {
+    margin-left: 50px;
+  }
+
+  .option-checkbox input {
+    margin-right: 0.5rem;
+  }
+  
+  .option-select select {
+    min-width: 200px;
+  }
+
+  .option-select label {
+    white-space: nowrap;
+  }
+  
+  .option-rows input {
+    width: 270px;
+  }
+  
+  .elements-group {
+    margin-left: auto; /* schiebt Buttons nach ganz rechts */
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .elements-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto; /* schiebt die gesamte Gruppe nach rechts */
+  }
+  
+  .elements-group label {
+    white-space: nowrap; /* verhindert Zeilenumbruch */
+  }
+
+  .elements-group input[type="text"] {
+    width: 70px;
+  }
+  
+  .elements-group button {
+    margin-left: 0.5rem;
+  }
+
+  .button-wrapper {
+    display: flex;
+    gap: 10px;
+  }
+
+  .button-wrapper button {
+    white-space: nowrap; /* verhindert Zeilenumbruch im Button selbst */
+  }
+
+
+  
+  /* @media (max-width: 600px) {
     .search-row {
-      flex-direction: column; /* stapelt die Elemente untereinander */
+      flex-direction: column;
     }
     .search-field,
     .category-select,
     .reset-button {
-      width: 100%; /* nimmt volle Breite */
+      width: 100%; 
     }
     .search-field input,
     .category-select select,
     .reset-button button {
-      width: 100%; /* sorgt dafür, dass die Controls die ganze Zeile füllen */
+      width: 100%;
       box-sizing: border-box;
     }
-  }
+  } */
   
-  .search-field {
-    flex: 1 1 10%;
-  }
+
   
+  /* END of Styles for Modify template */
+
   .category-select {
-    flex: 1 1 auto; /* passt sich flexibler an */
-    display: flex;
-    flex-direction: row; /* Select und Buttons nebeneinander */
-    align-items: center;
-    min-width: 0; /* verhindert, dass es den Button verdrängt */
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-right: 50px;
-}
+    flex: 0 0 250px;
+    min-width: 200px;
+    margin-left: 1rem; /* Abstand zur Suche */
+  }
   
   .select-with-button {
     display: flex;
@@ -384,18 +461,7 @@ margin-bottom: .25rem;
   .select-with-button select {
     flex: 1;
   }
-  
-  /* .small-button {
-    /* padding: 2px 6px; */
-    /* font-size: 0.85em; */
-  } */
 
-
-/*   
-  .reset-button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  } */
 
   #reloadCurrentPage {
     font-size: 0.85em;

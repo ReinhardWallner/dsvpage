@@ -216,14 +216,14 @@ $searchFields = '<form
    action="' . $home . '" 
    enctype="multipart/form-data">';
 
-$searchFields .= '<div class="search-row">
+$searchFields .= '<div class="search-row-top">
   <div class="search-field">';
 
 // Suchfeld
 if ($search) {
-	$searchFields .= '<input type="text" shared-files-search-files-v2 name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
+	$searchFields .= '<input type="text" shared-files-search-files-v2 class="search-input" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" value="' . $search . '" oninput="onInputSearchText()"  />';
 } else {
-	$searchFields .= '<input type="text" shared-files-search-files-v2 name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
+	$searchFields .= '<input type="text" shared-files-search-files-v2 class="search-input" name="searchField" autofocus placeholder="' . esc_html__('Search files...', 'shared-files') . '" oninput="onInputSearchText()" />';
 }
 $searchFields .= '</div>';
 
@@ -251,6 +251,10 @@ $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>
 $searchFields .= '<div class="category-select">';
 $searchFields .= $categoryDropdowm;
 $searchFields .= '</div>';
+$searchFields .= '</div>';
+
+$searchFields .= '<div class="search-row-bottom">';
+$searchFields .= '<div class="option-checkbox">';
 
 // Nur Kategorien bearbeiten
 $nurKategorienText = esc_html__('Modify categories only', 'astra-child');
@@ -260,13 +264,19 @@ if ($isReadonlyUser == true){
 }
 
 if ($nurKategorienAnzeigen == true) {
-	$searchFields .= '<div><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></div>';
+	$searchFields .= '<label for="nurKategorienAnzeigen"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" checked value="on" onclick="onNurKategorienAnzeigenClick()"/><span style="word-break: break-word;">' . $nurKategorienText . '</span></label>';
 } else {
-	$searchFields .= '<div><label for="nurKategorienAnzeigen" style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.4;"><span style="flex: 0 0 auto; margin-right: 10px;"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" style="margin-right: 10px;" onclick="onNurKategorienAnzeigenClick()"/></span><span style="word-break: break-word;">' . $nurKategorienText . '</span></label></div>';
+	$searchFields .= '<label for="nurKategorienAnzeigen"><input type="checkbox" name="nurKategorienAnzeigen" id="nurKategorienAnzeigen" onclick="onNurKategorienAnzeigenClick()"/><span style="word-break: break-word;">' . $nurKategorienText . '</span></label>';
 }
 
+$searchFields .= '</div>';
 
-$searchFields .= '<div>';
+$searchFields .= '<div class="option-select">';
+$onlyModifySingleFieldText = esc_html__('Modify single field:', 'astra-child');
+if ($isReadonlyUser){
+	$onlyModifySingleFieldText = esc_html__('Show single field:', 'astra-child');
+}
+$searchFields .= '<label>' . $onlyModifySingleFieldText . '</label>';
 $searchFields .= '<select name="onlyModifySingleField" id="onlyModifySingleField" class="shared-files-category-select select_v2" onchange="onSelectSingleFieldChange()">';
 $searchFields .= '<option class="level-0" id="notselected" value="notselected">' . esc_html__('Select single field to modify', 'astra-child') . '</option>';
 if($onlyModifySingleField != null && $onlyModifySingleField == "description"){
@@ -295,12 +305,13 @@ $searchFields .= '</select></div>';
 // error_log("s: " . print_r($s,true));
 //error_log("posts_per_page: " . print_r($posts_per_page,true));
 // Zeilen pro Seite
-$searchFields .= '<div style="display: flex; align-items: center; gap: 6px; margin-left: 30px;">';
-$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 70px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
-$searchFields .= '</div>';
+
 
 // Download ZIP
-$searchFields .= '<div class="button-group"><button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'astra-child') . '</button>';
+$searchFields .= '<div class="elements-group">';
+$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 70px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
+$searchFields .= '<div class="button-wrapper">';
+$searchFields .= '<button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'astra-child') . '</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
 
@@ -309,6 +320,7 @@ $searchFields .= '<button name="excepExportBtn" style="float:right" onclick="onE
 $searchFields .= '<input type="hidden" name="zipfilename" id="zipfilename"/>';
 $searchFields .= '<input type="hidden" name="createzipFile" id="createzipFile"/>';
 $searchFields .= '</div></div>';
+$searchFields .= '</div>';
 $searchFields .= '</form>';
 
 // ------------------------------------------------------------------------------------------------------------------------

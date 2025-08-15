@@ -133,8 +133,8 @@ if (gettype($vars) == "array") {
 	Create Neu 
 	Delete Löschen
 
-	Only modify single field: Einzelnes Feld ändern:
-	Only show single field: Einzelnes Feld anzeigen:
+	Modify single field: Einzelnes Feld ändern:
+	Show single field: Einzelnes Feld anzeigen:
 
 	Select single field to modify Einzelnes Feld zur Bearbeitung auswählen
 
