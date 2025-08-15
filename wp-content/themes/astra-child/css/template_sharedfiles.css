@@ -90,7 +90,33 @@ select[aria-disabled="true"] {
   background-color: #ffffff;
 }
 
+/* Mobile: Zeilen umbrechen */
+@media (max-width: 600px) {
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
+  .cell {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Beispiel: Label + Input zusammenhalten (falls du sowas einfügst) */
+  .rows-per-page {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rows-per-page input {
+    flex: 1 1 auto;
+    min-width: 50px;
+  }
+}
 
 /** Formular stretch auf volle Breite */ 
 form,
@@ -379,7 +405,7 @@ margin-bottom: .25rem;
   }
   
   .option-select select {
-    min-width: 200px;
+    min-width: 250px;
   }
 
   .option-select label {
@@ -424,25 +450,57 @@ margin-bottom: .25rem;
     white-space: nowrap; /* verhindert Zeilenumbruch im Button selbst */
   }
 
+/* Mobile Styles */
+@media (max-width: 600px) {
 
-  
-  /* @media (max-width: 600px) {
-    .search-row {
-      flex-direction: column;
-    }
-    .search-field,
-    .category-select,
-    .reset-button {
-      width: 100%; 
-    }
-    .search-field input,
-    .category-select select,
-    .reset-button button {
-      width: 100%;
-      box-sizing: border-box;
-    }
-  } */
-  
+  /* Gesamte Suchzeilen flexen auf Spalten */
+  .search-row-top,
+  .search-row-bottom {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem;
+  }
+
+  /* "Modify single field" margin entfernen */
+  .option-select {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  /* Zeilen pro Seite + Buttons in Elemente-Gruppe auf volle Breite */
+  .elements-group {
+    flex-direction: column !important;
+    flex-wrap: nowrap;  /* verhindert Zeilenumbruch */
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .elements-group label,
+  .elements-group input,
+  .elements-group button {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .button-wrapper {
+    flex-direction: column !important;
+    width: 100%;
+  }
+
+  .button-wrapper button {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  /* Suchfeld und Kategorie auf volle Breite */
+  .search-field,
+  .category-select {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+}
 
   
   /* END of Styles for Modify template */
