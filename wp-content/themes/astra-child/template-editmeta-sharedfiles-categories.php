@@ -66,8 +66,8 @@ get_header();
 $home = home_url( $wp->request );
 
 $searchFields = '<form id="categories-form" method="post" action="..." enctype="multipart/form-data">
-<div class="search-row">
-  <div class="search-field">';
+<div class="search-row search-row-top">
+  <div class="search-catupdate-field">';
 
 // Suchfeld
 if ($search) {
@@ -99,7 +99,7 @@ $endIndex = strpos($categoryDropdowm, ">");
 $categoryDropdowm = str_replace("class='shared-files-category-select select_v2'>", 'class="shared-files-category-select select_v2" onchange="onCategoryChange()">', $categoryDropdowm);
 
 // Nur Kategorien bearbeiten
-$searchFields .= '<div class="category-select">';
+$searchFields .= '<div class="category-catupdate-select">';
 $searchFields .= '<label for="sf_category">' . esc_html__('Choose category (inactive if search filter inserted or changes exist):', 'astra-child') . '</label>';
 $searchFields .= '<div class="select-with-button">';
 $searchFields .= $categoryDropdowm;
@@ -683,11 +683,6 @@ foreach ($allcategories as $obj) {
   }
 
   //TODO: 
-  // Styling responsive
-
-  // Einzelnes Feld bearbeiten, inkl. excel download und paginations
-  // --> Keine Kategorien bearbeiten?
-
   // Prüfen aller GET-Parameter in $pargs auch mitgesendet und testen!
 
   // Änderungen verwerfen in der Bearbeitungsmaske

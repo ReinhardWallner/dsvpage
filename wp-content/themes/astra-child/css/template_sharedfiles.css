@@ -450,63 +450,81 @@ margin-bottom: .25rem;
     white-space: nowrap; /* verhindert Zeilenumbruch im Button selbst */
   }
 
-/* Mobile Styles */
-@media (max-width: 600px) {
+  /* Mobile Styles */
+  @media (max-width: 600px) {
 
-  /* Gesamte Suchzeilen flexen auf Spalten */
-  .search-row-top,
-  .search-row-bottom {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 0.5rem;
+    /* Gesamte Suchzeilen flexen auf Spalten */
+    .search-row-top,
+    .search-row-bottom {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 0.5rem;
+    }
+
+    /* "Modify single field" margin entfernen */
+    .option-select {
+      margin-left: 0 !important;
+      width: 100%;
+    }
+
+    /* Zeilen pro Seite + Buttons in Elemente-Gruppe auf volle Breite */
+    .elements-group {
+      flex-direction: column !important;
+      flex-wrap: nowrap;  /* verhindert Zeilenumbruch */
+      margin-left: 0 !important;
+      width: 100%;
+    }
+
+    .elements-group label,
+    .elements-group input,
+    .elements-group button {
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-bottom: 0.5rem;
+    }
+
+    .button-wrapper {
+      flex-direction: column !important;
+      width: 100%;
+    }
+
+    .button-wrapper button {
+      width: 100% !important;
+      margin-left: 0 !important;
+    }
+
+    /* Suchfeld und Kategorie auf volle Breite */
+    .search-field,
+    .category-select {
+      flex: 1 1 100% !important;
+      max-width: 100% !important;
+    }
+
+    .search-catupdate-field,
+    .category-catupdate-select,
+    .reset-button {
+        flex: 1 1 100% !important;
+        min-width: 0 !important; /* vorher war 200px */
+        margin-left: 0 !important; /* entfernt Desktop-Abstand */
+    }
   }
-
-  /* "Modify single field" margin entfernen */
-  .option-select {
-    margin-left: 0 !important;
-    width: 100%;
-  }
-
-  /* Zeilen pro Seite + Buttons in Elemente-Gruppe auf volle Breite */
-  .elements-group {
-    flex-direction: column !important;
-    flex-wrap: nowrap;  /* verhindert Zeilenumbruch */
-    margin-left: 0 !important;
-    width: 100%;
-  }
-
-  .elements-group label,
-  .elements-group input,
-  .elements-group button {
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-bottom: 0.5rem;
-  }
-
-  .button-wrapper {
-    flex-direction: column !important;
-    width: 100%;
-  }
-
-  .button-wrapper button {
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-
-  /* Suchfeld und Kategorie auf volle Breite */
-  .search-field,
-  .category-select {
-    flex: 1 1 100% !important;
-    max-width: 100% !important;
-  }
-
-}
 
   
   /* END of Styles for Modify template */
 
-  .category-select {
-    flex: 0 0 250px;
+  /* Styles for Modify category template */  
+  .search-row-top .search-field {
+    flex: 2 1 200px; /* deutlich mehr Platz für die Suche */
+    max-width: 400px;
+  }
+
+  .search-row-top .category-select {
+      flex: 0 0 250px;
+  }
+  .search-catupdate-field,
+  .category-catupdate-select,
+  .reset-button {
+    flex: 0 0 550px;
     min-width: 200px;
     margin-left: 1rem; /* Abstand zur Suche */
   }
@@ -520,11 +538,16 @@ margin-bottom: .25rem;
     flex: 1;
   }
 
+  .select-with-button button {
+    font-size: 0.85em;
+  }
 
   #reloadCurrentPage {
     font-size: 0.85em;
   }
 
+
+  /* END of Styles for Modify category template */  
 
   
   .dual-listbox {
