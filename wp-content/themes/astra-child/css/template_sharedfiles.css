@@ -509,7 +509,9 @@ margin-bottom: .25rem;
     }
   }
 
-  
+  #dataForm input[type="submit"] {
+    margin-top: 20px; /* Abstand nach oben */
+  }
   /* END of Styles for Modify template */
 
   /* Styles for Modify category template */  
@@ -522,8 +524,8 @@ margin-bottom: .25rem;
       flex: 0 0 250px;
   }
   .search-catupdate-field,
-  .category-catupdate-select,
-  .reset-button {
+  .category-catupdate-select
+  {
     flex: 0 0 550px;
     min-width: 200px;
     margin-left: 1rem; /* Abstand zur Suche */

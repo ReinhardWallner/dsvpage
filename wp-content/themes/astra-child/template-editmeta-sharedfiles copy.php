@@ -309,7 +309,8 @@ $searchFields .= '</select></div>';
 
 // Download ZIP
 $searchFields .= '<div class="elements-group">';
-$searchFields .= '<label style="margin-right: 10px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 70px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
+$searchFields .= '<div class="reset-button"><button type="button" id="reloadCurrentPage" title="' . esc_html__('Discard changes', 'astra-child') . '" disabled="true" class="button">' . esc_html__('Discard changes', 'astra-child') . '</button></div>';
+$searchFields .= '<label style="margin-right: 10px; margin-left: 20px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 70px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
 $searchFields .= '<div class="button-wrapper">';
 $searchFields .= '<button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'astra-child') . '</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
@@ -505,7 +506,17 @@ echo '<div id="cpt-update-wrapper">';
 echo $searchFields . $table . $pagination;
 echo '</div>';
 
-error_log($searchFields . $table . $pagination);
+echo '<div id="reloadPageModal" class="modal">
+<div class="modal-content">
+  <label>Änderungen verwerfen und Seite neu laden?</label>
+  <div class="modal-actions">
+    <button id="reloadPage">Verwerfen</button>
+    <button id="cancelReloadPage">Abbrechen</button>
+  </div>
+</div>
+</div>';
+
+// error_log($searchFields . $table . $pagination);
 
 // do_action( 'hestia_page_builder_blank_after_content' );
 
@@ -530,6 +541,8 @@ wp_reset_postdata();
 				searchfield[0].setSelectionRange(caret, caret);
 			}
 		}
+
+		let reloadPageModal = document.getElementById("reloadPageModal");
 	}
 
 	document.getElementById("dataForm").addEventListener("submit", function(e) {
@@ -544,17 +557,26 @@ wp_reset_postdata();
 		appendHiddenInput("nurKategorienAnzeigen", form, "on");
 	});
 
-	function appendHiddenInput(name, form, ischeckbox){
+	function appendHiddenInput(name, form, ischeckbox, explicitValue){
 		const hiddenInput = document.createElement("input");
 		hiddenInput.type = "hidden";
 		hiddenInput.name = "referer_parm_" + name;
-		let value = getInputValue(name);
-		if(ischeckbox){
-			value = getInputValueCheckbox(name);
+		let value;
+		if(explicitValue){
+			value = explicitValue;
+		}
+		else{
+			let value = getInputValue(name);
+			if(ischeckbox){
+				value = getInputValueCheckbox(name);
+			}
 		}
 		hiddenInput.value = value;
 		
-		form.appendChild(hiddenInput);
+		if(value && value.length > 0)
+		{
+			form.appendChild(hiddenInput);
+		}
 	}
 
 	var inputArrayJsOriginal = <?php echo json_encode($inputArray); ?>;
@@ -650,6 +672,10 @@ wp_reset_postdata();
 			saveBtn[0].disabled = changesExists == false;
 		}
 
+	    let reloadCurrentPage = document.getElementById('reloadCurrentPage');
+		// console.log("disableCategoryOptions reloadCurrentPage", reloadCurrentPage)
+		reloadCurrentPage.disabled = changesExists == false;
+
 		let searchField = document.getElementsByName("searchField");
 		if (searchField.length > 0) {
 			searchField[0].disabled = changesExists == true;
@@ -729,6 +755,29 @@ wp_reset_postdata();
 
 		return null;
 	}
+
+ document.getElementById("reloadCurrentPage").addEventListener("click", () => {
+    reloadPageModal.style.display = "flex";
+  });
+
+  document.getElementById("reloadPage").addEventListener("click", () => {
+    reloadPageModal.style.display = "none";
+     
+    var form = document.getElementById("dataForm");
+
+	appendHiddenInput("searchField", form);
+	appendHiddenInput("sf_category", form);
+	appendHiddenInput("elementsPerPage", form);
+	appendHiddenInput("nurKategorienAnzeigen", form, "on");
+    appendHiddenInput("reloadPage", form, null, "true")
+    console.log("reloadPage before submit", form)
+    // Natives submit erzwingen!
+    HTMLFormElement.prototype.submit.call(form);
+  });
+
+  document.getElementById("cancelReloadPage").addEventListener("click", () => {
+    reloadPageModal.style.display = "none";
+  });
 
 	function onInputSearchText(newPaged) {
 		let pagedToSend = 1;

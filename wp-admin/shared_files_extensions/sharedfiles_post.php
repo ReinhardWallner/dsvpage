@@ -54,58 +54,60 @@ $vars = $_POST;
 error_log("POST VALUES " . print_r($vars, true));
 
 if (gettype($vars) == "array") {
-	// Read post data
-	$title_values = [];
-	$desc_values = [];
-	$customfield_values = [];
-	$tag_values = [];
-	$category_values = [];
+	if(!array_key_exists("referer_parm_reloadPage", $vars)) {
+		// Read post data
+		$title_values = [];
+		$desc_values = [];
+		$customfield_values = [];
+		$tag_values = [];
+		$category_values = [];
 
-	$keys = array_keys($vars);
-	foreach ($keys as $key) {
-		if (str_starts_with($key, "_sf_file_title_")) {
-			$file_id = addSingleIdValuesToArray($vars, $key, $title_values);
+		$keys = array_keys($vars);
+		foreach ($keys as $key) {
+			if (str_starts_with($key, "_sf_file_title_")) {
+				$file_id = addSingleIdValuesToArray($vars, $key, $title_values);
+			}
+			if (str_starts_with($key, "_sf_file_description_")) {
+				$file_id = addSingleIdValuesToArray($vars, $key, $desc_values);
+			}
+			if (str_starts_with($key, "_sf_file_cf")) {
+				$file_id = addDoubleIdValuesToArray($vars, $key, $customfield_values);
+			}
+			if (str_starts_with($key, "_sf_file_tags")) {
+				$file_id = addSingleIdValuesToArray($vars, $key, $tag_values);
+			}
+			if (str_starts_with($key, "_sf_file_cat")) {
+				$file_id = addDoubleIdValuesToArray($vars, $key, $category_values);
+			}
 		}
-		if (str_starts_with($key, "_sf_file_description_")) {
-			$file_id = addSingleIdValuesToArray($vars, $key, $desc_values);
-		}
-		if (str_starts_with($key, "_sf_file_cf")) {
-			$file_id = addDoubleIdValuesToArray($vars, $key, $customfield_values);
-		}
-		if (str_starts_with($key, "_sf_file_tags")) {
-			$file_id = addSingleIdValuesToArray($vars, $key, $tag_values);
-		}
-		if (str_starts_with($key, "_sf_file_cat")) {
-			$file_id = addDoubleIdValuesToArray($vars, $key, $category_values);
-		}
+
+
+		// error_log("Title values:" . print_r($title_values, true));
+		// error_log("Description values:" . print_r($desc_values, true));
+		// error_log("Tag values:" . print_r($tag_values, true));
+		// error_log("Custom Field values:" . print_r($customfield_values, true));
+		// error_log("Category values:" . print_r($category_values, true));
+
+		// Update values
+		$tfiltered = array_filter($title_values, "modifiedValues");
+		// error_log("titles filtered " . print_r($tfiltered, true));
+
+		saveTitles($tfiltered);
+
+		$desfiltered = array_filter($desc_values, "modifiedValues");
+		// error_log("Description values desfiltered:" . print_r($desfiltered, true));
+		saveDescriptions($desfiltered);
+
+		$tagsfiltered = array_filter($tag_values, "modifiedValues");
+		saveTags($tagsfiltered);
+
+		$customfield_valuesfiltered = modifiedValuesArray($customfield_values);
+		saveCustomFields($customfield_valuesfiltered);
+
+		error_log("category_values:" . print_r($category_values, true));
+		$category_valuesfiltered = modifiedValuesArray($category_values);
+		saveCategories($category_valuesfiltered);
 	}
-
-
-	// error_log("Title values:" . print_r($title_values, true));
-	// error_log("Description values:" . print_r($desc_values, true));
-	// error_log("Tag values:" . print_r($tag_values, true));
-	// error_log("Custom Field values:" . print_r($customfield_values, true));
-	// error_log("Category values:" . print_r($category_values, true));
-
-	// Update values
-	$tfiltered = array_filter($title_values, "modifiedValues");
-	// error_log("titles filtered " . print_r($tfiltered, true));
-
-	saveTitles($tfiltered);
-
-	$desfiltered = array_filter($desc_values, "modifiedValues");
-	// error_log("Description values desfiltered:" . print_r($desfiltered, true));
-	saveDescriptions($desfiltered);
-
-	$tagsfiltered = array_filter($tag_values, "modifiedValues");
-	saveTags($tagsfiltered);
-
-	$customfield_valuesfiltered = modifiedValuesArray($customfield_values);
-	saveCustomFields($customfield_valuesfiltered);
-
-	error_log("category_values:" . print_r($category_values, true));
-	$category_valuesfiltered = modifiedValuesArray($category_values);
-	saveCategories($category_valuesfiltered);
 }
 
 /*TODOs:
