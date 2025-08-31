@@ -52,7 +52,7 @@ where p.post_type='shared_file'";
 
 	if ($parameters["category"]) {
 		$cat = $parameters["category"];
-		$filter .= "and (t_cat.name like '%{$cat}%' and tax_cat.taxonomy='shared-file-category')";
+		$filter .= "and (t_cat.slug like '%{$cat}%' and tax_cat.taxonomy='shared-file-category')";
 	}
 
 	$limit = $parameters["posts_per_page"];
@@ -73,9 +73,11 @@ limit {$limit} offset {$offset}";
 	$wpdb = $parameters["wpdb"];
 	$queryCountResult = $wpdb->get_results($queryCount);
 	$total = array_column($queryCountResult, 'total')[0];
+	// error_log("query " . $query);
 
 	$queryResult = $wpdb->get_results($query);
 	$ids = array_column($queryResult, 'id');
+	// error_log("ids " . print_r($ids, true));
 	
 	$data = array();
 	$data["total"] = $total;
@@ -117,8 +119,8 @@ limit {$limit} offset {$offset}";
 	// Categories Header
 	$allcategories = $parameters["allcategories"];
 	foreach ($allcategories as $category) {
-		array_push($headRow, sanitize_title($category->slug));
-		array_push($headRowKat, sanitize_title($category->slug));
+		array_push($headRow, $category->name);
+		array_push($headRowKat, $category->name);
 		array_push($keys, array("category" => $category->term_id));
 	}
 
@@ -135,7 +137,8 @@ limit {$limit} offset {$offset}";
 	$data["headRowSingleFields"] = $headRowSingleFields;
 	
 	$data["keys"] = $keys;
-
+	//error_log("data " . print_r($data, true));
+	
 	if ($total > 0) {
 		$args = array(
 			'post_type' => 'shared_file',
