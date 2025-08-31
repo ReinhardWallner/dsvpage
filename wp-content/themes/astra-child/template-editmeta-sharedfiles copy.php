@@ -563,16 +563,15 @@ wp_reset_postdata();
 		hiddenInput.name = "referer_parm_" + name;
 		let value;
 		if(explicitValue){
-			value = explicitValue;
+				value = explicitValue;
 		}
 		else{
-			let value = getInputValue(name);
+			value = getInputValue(name);
 			if(ischeckbox){
 				value = getInputValueCheckbox(name);
 			}
 		}
 		hiddenInput.value = value;
-		
 		if(value && value.length > 0)
 		{
 			form.appendChild(hiddenInput);
@@ -741,7 +740,7 @@ wp_reset_postdata();
 		let inputObject = document.getElementsByName(name);
 
 		if (inputObject && inputObject.length > 0) {
-			//console.log("markInputObject ", name, equals, modifiedClassName)
+			// console.log("markInputObject ", name, equals, modifiedClassName)
 			if (equals)
 				inputObject[0].classList.remove(modifiedClassName);
 			else
