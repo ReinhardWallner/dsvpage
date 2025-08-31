@@ -381,6 +381,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 			$dataRowArray = $data[$outerKey];
 			$row = "";
 			$file_id = null;
+			$singleLineResult = null;
 			foreach ($dataArrayKeys as $dataKey) {
 				$element = null;
 				if (is_array($dataKey)) {
@@ -406,30 +407,40 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 						addCategoryField($row, $file_id, $categoryTerm, $catValue, $checkboxArray, $isReadonlyUser);
 					}
 				} else {
-					$element = $dataRowArray[$dataKey];
+					if(!is_array($dataRowArray)){
+						$singleLineResult = $dataRowArray;
+						break;
+					}
+					else{
+						$element = $dataRowArray[$dataKey];
 
-					if ($dataKey == "file_id") {
+						if ($dataKey == "file_id") {
 
-						$file_id = $element;
-						$row = "";
-						$row .= '<div class="row">
-						<div class="cell">' . $file_id . '</div>';
-					} else if ($dataKey == "title") {
-						addTitleField($row, $file_id, $element, $inputArray, $isReadonlyUser);
-					} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
-						if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
-						($onlyModifySingleField != null && 
-						str_starts_with($onlyModifySingleField, "description"))) {						
-							addDescriptionField($row, $file_id, $element, $inputArray, $isReadonlyUser);
-						}
-					} else if ($dataKey == "tags" && $nurKategorienAnzeigen == false) {
-						if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
-						($onlyModifySingleField != null && 
-						str_starts_with($onlyModifySingleField, "tags"))) {	
-							addTagsField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+							$file_id = $element;
+							$row = "";
+							$row .= '<div class="row">
+							<div class="cell">' . $file_id . '</div>';
+						} else if ($dataKey == "title") {
+							addTitleField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+						} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
+							if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
+							($onlyModifySingleField != null && 
+							str_starts_with($onlyModifySingleField, "description"))) {						
+								addDescriptionField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+							}
+						} else if ($dataKey == "tags" && $nurKategorienAnzeigen == false) {
+							if(($onlyModifySingleField == null || $onlyModifySingleField == "notselected") ||
+							($onlyModifySingleField != null && 
+							str_starts_with($onlyModifySingleField, "tags"))) {	
+								addTagsField($row, $file_id, $element, $inputArray, $isReadonlyUser);
+							}
 						}
 					}
 				}
+			}
+
+			if($singleLineResult){
+				$row .= $singleLineResult;
 			}
 
 			$row .= "</div>";
