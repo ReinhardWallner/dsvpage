@@ -613,10 +613,22 @@ wp_reset_postdata();
 			})
 
 			if (foundElement) {
-				foundElement[name].value = data;
+				// console.log("handleInputChange foundElement", name, foundElement[name], foundElement[name].value, data);
 				let foundElementOrig = arrayJsOriginal.find(el => { if (el[name] !== undefined) return el; })
-				
-				if (foundElementOrig && foundElementOrig[name][field] != foundElement[name][field]) {
+				var equ = true;
+
+				if(name.includes("_sf_file_cat")){
+					foundElement[name].value = data;
+					foundElement[name].checked = data == true;
+					equ = foundElementOrig[name]["checked"] == foundElement[name]["checked"];
+				}else{
+					foundElement[name].value = data;
+
+					equ = foundElementOrig[name][field] == foundElement[name][field];
+				}
+				// console.log("handleInputChange foundElementOrig", name, foundElementOrig[name], foundElementOrig[name].value);
+			
+				if (foundElementOrig && equ == false) {
 					// console.log("DIFFERENT");
 					this.markInputObject(name, false, modifiedClassName)
 				} else {
@@ -729,6 +741,7 @@ wp_reset_postdata();
 		let inputObject = document.getElementsByName(name);
 
 		if (inputObject && inputObject.length > 0) {
+			//console.log("markInputObject ", name, equals, modifiedClassName)
 			if (equals)
 				inputObject[0].classList.remove(modifiedClassName);
 			else
@@ -756,9 +769,9 @@ wp_reset_postdata();
 		return null;
 	}
 
- document.getElementById("reloadCurrentPage").addEventListener("click", () => {
-    reloadPageModal.style.display = "flex";
-  });
+	document.getElementById("reloadCurrentPage").addEventListener("click", () => {
+		reloadPageModal.style.display = "flex";
+	});
 
   document.getElementById("reloadPage").addEventListener("click", () => {
     reloadPageModal.style.display = "none";

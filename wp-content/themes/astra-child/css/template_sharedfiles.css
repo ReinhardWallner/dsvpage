@@ -3,13 +3,18 @@
     outline: 3px solid red;
 }
 
-.modified-checkbox {
-    outline: 3px solid red;
+/* Standard */
+input[type="checkbox"] {
+  outline: none;
 }
 
-input[type=checkbox] .modified-checkbox {
-    accent-color: yellow;
+/* Roter Rand bei Änderung */
+.modified-checkbox {
+  outline: 2px solid red !important;
+  outline-offset: 2px !important;
+  border-radius: 3px !important;
 }
+
 
 /** disabled stylings */
 a.disabled {

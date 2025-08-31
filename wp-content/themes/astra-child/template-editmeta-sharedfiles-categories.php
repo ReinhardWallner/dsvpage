@@ -685,9 +685,17 @@ foreach ($allcategories as $obj) {
   //TODO: 
   // Prüfen aller GET-Parameter in $pargs auch mitgesendet und testen!
 
-  // Änderungen verwerfen in der Bearbeitungsmaske
-  // --> Zweite Zeile für "Nicht-Such-Felder" und Buttons
-  
+  // Bugs:
+  // Kategorie auswählen, Kategorie ändern, speichern. --> Die Filterung auf Kategorie geht verloren
+  // Zip Klick Kein Dateiname eingeben ist möglich --> Umbau auf modalen Dialog um das zu verhindern
+
+  // Kategorie neu anlegen mit existierendem Namen
+  // * es erscheint keine Fehlermeldung --> Soll: Frontend-Check, dass die Kategorie schon existiert!
+  // * Konsolenfehler Undefined array key "onlyModifySingleField" im Backend
+
+  // Kategorien: Abstand zwischen Steuerleiste und Zuordnungs-felder verkleinern, Zuordnungs-felder vergrößern
+
+  // Testformulare + BB-Tests
   // Alle Files importieren
   // Massentests
 </script>
