@@ -1,6 +1,6 @@
 /** Stylings für geänderte Zellen */
 .modified-input {
-    outline: 3px solid red;
+    outline: 3px solid green;
 }
 
 /* Standard */
@@ -10,7 +10,7 @@ input[type="checkbox"] {
 
 /* Roter Rand bei Änderung */
 .modified-checkbox {
-  outline: 2px solid red !important;
+  outline: 2px solid green !important;
   outline-offset: 2px !important;
   border-radius: 3px !important;
 }
