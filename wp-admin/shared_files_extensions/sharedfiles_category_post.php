@@ -62,8 +62,12 @@ if (gettype($vars) == "array") {
 		if(array_key_exists("referer_parm_sf_category_createnew", $vars)){
 			$categoryCreatenew = $vars["referer_parm_sf_category_createnew"];
 			if($categoryCreatenew){
-				error_log("BEFORE createNewCategory " . print_r($categoryCreatenew, true));
-				$createdTermSlug = createNewCategory($categoryCreatenew);
+				$parentSlug = null;
+				if(array_key_exists("referer_parm_sf_category_createnew_parentslug", $vars)){
+					$parentSlug = $vars["referer_parm_sf_category_createnew_parentslug"];
+				}
+				//error_log("BEFORE createNewCategory " . print_r($categoryCreatenew, true) . ", parent " . print_r($parentSlug, true));
+				$createdTermSlug = createNewCategory($categoryCreatenew, $parentSlug);
 
 				if($createdTermSlug){
 					$sendback_test = wp_get_referer();

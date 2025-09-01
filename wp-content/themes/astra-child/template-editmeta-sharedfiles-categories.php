@@ -253,12 +253,22 @@ $form .= '<input type="submit" name="submit" disabled="true" value="' . esc_html
 $form .= '</form>';
 
 echo $form;
-// error_log($form);
+// error_log("allcats " . print_r($allcategories, true));
 
 echo '<div id="newCategoryModal" class="modal">
 <div class="modal-content">
   <h3>Neue Kategorie anlegen</h3>
   <input type="text" id="newCategoryInput" placeholder="Kategoriename eingeben">
+
+  <label>Übergeordnete Kategorie:</label>
+  <select name="parent_category_select" id="parent_category_select">
+  <option value="" selected disabled>-- ' . esc_html__("please select (optional)", 'astra-child') . ' --</option>';
+foreach ($allcategories as $category1) {
+  echo '<option class="level-0" value="' . $category1->slug . '">' . $category1->name . '</option>';
+}
+echo '</select>';
+
+echo '
   <div class="modal-actions">
     <button id="saveCategory">Speichern</button>
     <button id="cancelCategory">Abbrechen</button>
@@ -329,14 +339,29 @@ foreach ($allcategories as $obj) {
 
   document.getElementById("saveCategory").addEventListener("click", () => {
     let newCategory = input.value.trim();
+    modal.style.display = "none";
+    let parentCategory = document.getElementById("parent_category_select");
     if (newCategory) {
-      console.log("Neue Kategorie:", newCategory);
-      modal.style.display = "none";
+      console.log("Neue Kategorie:, allCategories, parentCategory", newCategory, allCategories, parentCategory);
+      if(allCategories){
+        let existingCategory = allCategories.some(c => c.name.toLowerCase() == newCategory.toLowerCase())
+        if(existingCategory){
+          alert("Die Kategorie mit dem Namen '" + newCategory + "' existiert bereits!");
+          return;
+        }
+      }
       // alert(`Kategorie "${newCategory}" wurde angelegt!`);
+      let selectedParent = null;
+      if(parentCategory){
+          selectedParent = parentCategory.selectedOptions.length === 1 ? parentCategory.value : undefined;
+      }
 
       var form = document.getElementById("dataForm-categories");
       console.log("Neue Kategorie Form", form);
       appendHiddenInput("sf_category_createnew", form, false, newCategory);
+      if(selectedParent) {
+        appendHiddenInput("sf_category_createnew_parentslug", form, false, selectedParent);
+      }
       // Natives submit erzwingen!
       HTMLFormElement.prototype.submit.call(form);
     }
@@ -683,17 +708,12 @@ foreach ($allcategories as $obj) {
   }
 
   //TODO: 
-  // Prüfen aller GET-Parameter in $pargs auch mitgesendet und testen!
-
-  // Bugs:
-  // Kategorie auswählen, Kategorie ändern, speichern. --> Die Filterung auf Kategorie geht verloren
-  // Zip Klick Kein Dateiname eingeben ist möglich --> Umbau auf modalen Dialog um das zu verhindern
-
   // Kategorie neu anlegen mit existierendem Namen
   // * es erscheint keine Fehlermeldung --> Soll: Frontend-Check, dass die Kategorie schon existiert!
-  // * Konsolenfehler Undefined array key "onlyModifySingleField" im Backend
+  // * Parent-Kategorie auswählen!
 
-  // Kategorien: Abstand zwischen Steuerleiste und Zuordnungs-felder verkleinern, Zuordnungs-felder vergrößern
+  // Backend-filenamen verbessern und Templates neu zuweisen
+  // Id Spalte ausblenden
 
   // Testformulare + BB-Tests
   // Alle Files importieren

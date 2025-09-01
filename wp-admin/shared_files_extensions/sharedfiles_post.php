@@ -43,7 +43,7 @@ foreach($params as $key => $value){
 	$i++;
 }
 
-// error_log("POST _POST " . print_r($_POST, true) . ", sendback_test url " . print_r($sendback_test, true));
+//error_log("POST _POST " . print_r($_POST, true) . ", sendback_test url " . print_r($sendback_test, true));
 
 if (isset($_POST['post_type']) && $post && $post_type !== $_POST['post_type']) {
 	wp_die(__('A post type mismatch has been detected.'), __('Sorry, you are not allowed to edit this item.'), 400);
@@ -137,6 +137,7 @@ if (gettype($vars) == "array") {
 
 	Modify single field: Einzelnes Feld ändern:
 	Show single field: Einzelnes Feld anzeigen:
+	please select (optional)  bitte wählen (optional)
 
 	Select single field to modify Einzelnes Feld zur Bearbeitung auswählen
 

@@ -101,7 +101,7 @@ $onlyModifySingleField = null;
 if (isset($_POST['onlyModifySingleField']) != null) {
 	$onlyModifySingleField = $_POST['onlyModifySingleField'];
 } else if (isset($_GET['onlyModifySingleField']) != null ) {
-	$onlyModifySingleField = $_POST['onlyModifySingleField'];
+	$onlyModifySingleField = $_GET['onlyModifySingleField'];
 }
 
 $excel_export = false;
@@ -312,12 +312,12 @@ $searchFields .= '<div class="elements-group">';
 $searchFields .= '<div class="reset-button"><button type="button" id="reloadCurrentPage" title="' . esc_html__('Discard changes', 'astra-child') . '" disabled="true" class="button">' . esc_html__('Discard changes', 'astra-child') . '</button></div>';
 $searchFields .= '<label style="margin-right: 10px; margin-left: 20px;">' . esc_html__('Rows per page', 'astra-child') . '</label><input type="text" name="elementsPerPage" id="elementsPerPage" style="width: 70px;" value="' . $posts_per_page . '" onblur="elementsPerPageChange(this.name, this.value)"/>';
 $searchFields .= '<div class="button-wrapper">';
-$searchFields .= '<button name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'astra-child') . '</button>';
+$searchFields .= '<button type="button" name="downloadZipBtn" style="float:right" onclick="onZipFileCreationClick()">' . esc_html__('Download ZIP', 'astra-child') . '</button>';
 $searchFields .= '<input type="hidden" name="excelImportFilename" id="excelImportFilename"/>';
 $searchFields .= '<input type="hidden" name="doExcelExport" id="doExcelExport"/>';
 
 // Download Excel Liste
-$searchFields .= '<button name="excepExportBtn" style="float:right" onclick="onExcelExportclick()">' . esc_html__('Excel Export', 'astra-child') . '</button>';
+$searchFields .= '<button type="button" name="excepExportBtn" style="float:right" onclick="onExcelExportclick()">' . esc_html__('Excel Export', 'astra-child') . '</button>';
 $searchFields .= '<input type="hidden" name="zipfilename" id="zipfilename"/>';
 $searchFields .= '<input type="hidden" name="createzipFile" id="createzipFile"/>';
 $searchFields .= '</div></div>';
@@ -566,6 +566,7 @@ wp_reset_postdata();
 		appendHiddenInput("sf_category", form);
 		appendHiddenInput("elementsPerPage", form);
 		appendHiddenInput("nurKategorienAnzeigen", form, "on");
+		appendHiddenInput("onlyModifySingleField", form);
 	});
 
 	function appendHiddenInput(name, form, ischeckbox, explicitValue){
@@ -792,6 +793,7 @@ wp_reset_postdata();
 	appendHiddenInput("sf_category", form);
 	appendHiddenInput("elementsPerPage", form);
 	appendHiddenInput("nurKategorienAnzeigen", form, "on");
+	appendHiddenInput("onlyModifySingleField", form);	
     appendHiddenInput("reloadPage", form, null, "true")
     console.log("reloadPage before submit", form)
     // Natives submit erzwingen!
@@ -837,21 +839,27 @@ wp_reset_postdata();
 	
 	function onExcelExportclick() {
 		let fileName = prompt("Bitte geben Sie den gewünschten Dateinamen ein", "");
-		if (fileName != null) {
+		if (fileName != null && fileName.length > 0) {
 			document.getElementById("excelImportFilename").value = fileName;
 			document.getElementById("doExcelExport").value = true;
 			var form = document.getElementById('the-redirect-form');
 			form.submit();
+		} else {
+			document.getElementById("excelImportFilename").value = null;
+			document.getElementById("doExcelExport").value = false;
 		}
 	}
 
 	function onZipFileCreationClick() {
 		let fileName = prompt("Bitte geben Sie den gewünschten Dateinamen ein", "");
-		if (fileName != null) {
+		if (fileName != null && fileName.length > 0) {
 			document.getElementById("zipfilename").value = fileName;
 			document.getElementById("createzipFile").value = true;
 			var form = document.getElementById('the-redirect-form');
 			form.submit();
+		} else {
+			document.getElementById("zipfilename").value = null;
+			document.getElementById("createzipFile").value = false;
 		}
 	}
 

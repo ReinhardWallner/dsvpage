@@ -100,13 +100,22 @@ function replaceCategories($categorySlug, $fileIds){
 	}
 }
 
-function createNewCategory($newCategoryName){
+function createNewCategory($newCategoryName, $parentSlug){
 	// Prüfen, ob Kategorie schon existiert
 	if (!term_exists($newCategoryName, 'shared-file-category')) {
-		$result = wp_insert_term(
-			$newCategoryName, 		// Name
-			'shared-file-category'  // Taxonomie
-		);
+		if($parentSlug){
+			$parent = get_term_by( 'slug', $parentSlug, 'shared-file-category' );
+			$result = wp_insert_term(
+				$newCategoryName, 		// Name
+				'shared-file-category',  // Taxonomie
+				array( 'parent' => $parent->term_id )
+			);
+		} else{
+			$result = wp_insert_term(
+				$newCategoryName, 		// Name
+				'shared-file-category'  // Taxonomie
+			);
+		}
 		if (!is_wp_error($result)) {
 			// $result enthält 'term_id' und 'term_taxonomy_id'
 			$term_id = $result['term_id'];

@@ -3,7 +3,9 @@
 function queryData($parameters)
 {
 	$nurKategorienAnzeigen = $parameters["nurKategorienAnzeigen"];
-	$onlyModifySingleField = $parameters["onlyModifySingleField"];
+	$onlyModifySingleField = null;
+	if(array_key_exists("onlyModifySingleField", $parameters))
+		$onlyModifySingleField = $parameters["onlyModifySingleField"];
 
 	$select = "SELECT distinct p.id, p.post_title
 FROM `wp_posts` p
