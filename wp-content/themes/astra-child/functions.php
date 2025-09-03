@@ -13,7 +13,7 @@ add_action( 'wp_enqueue_scripts', 'astra_child_enqueue_styles' );
 
 function asta_child_sharedfiles_template_custom_scripts() {
     // error_log("asta_child_sharedfiles_template_custom_scripts");
-    if (is_page('cpu-update')) { // Slug deiner Seite
+    if (is_page('shared-files-data-editor')) { // Slug deiner Seite
         // error_log("asta_child_sharedfiles_template_custom_scripts IS PAGE cpu-update");
         wp_register_script('custom-inline-js', '');
         wp_enqueue_script('custom-inline-js');
@@ -38,7 +38,7 @@ function asta_child_sharedfiles_template_custom_scripts() {
                 }
             });
         ");
-    } else if(is_page('cpt-category-update')) { // Slug deiner Seite
+    } else if(is_page('shared-files-category-editor')) { // Slug deiner Seite
         // error_log("asta_child_sharedfiles_template_custom_scripts IS PAGE cpu-update");
         wp_register_script('custom-inline-js', '');
         wp_enqueue_script('custom-inline-js');
@@ -58,10 +58,10 @@ add_action('wp_enqueue_scripts', 'asta_child_sharedfiles_template_custom_scripts
 
 function tempsharedfiles_enqueue_update_form_styles() {
     // Prüfe, ob eine bestimmte Seitenvorlage verwendet wird
-    $istemp = is_page_template('template-editmeta-sharedfiles copy.php');
-    $istemp2 = is_page_template('template-editmeta-sharedfiles-categories.php');
-    if (is_page_template('template-editmeta-sharedfiles copy.php') ||
-    is_page_template('template-editmeta-sharedfiles-categories.php')) {
+    $istemp = is_page_template('template-shared-files-data-editor.php');
+    $istemp2 = is_page_template('template-shared-files-category-editor.php');
+    if (is_page_template('template-shared-files-data-editor.php') ||
+    is_page_template('template-shared-files-category-editor.php')) {
         wp_enqueue_style(
             'update-form-style',
             get_stylesheet_directory_uri() . '/css/template_sharedfiles.css',

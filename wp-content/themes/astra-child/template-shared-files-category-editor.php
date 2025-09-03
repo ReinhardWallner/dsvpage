@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: CPT Category Update
+ * Template Name: Shared Files Category Editor
  *
  * The template for the full-width page.
  *
@@ -708,13 +708,6 @@ foreach ($allcategories as $obj) {
   }
 
   //TODO: 
-  // Kategorie neu anlegen mit existierendem Namen
-  // * es erscheint keine Fehlermeldung --> Soll: Frontend-Check, dass die Kategorie schon existiert!
-  // * Parent-Kategorie auswählen!
-
-  // Backend-filenamen verbessern und Templates neu zuweisen
-  // Id Spalte ausblenden
-
   // Testformulare + BB-Tests
   // Alle Files importieren
   // Massentests

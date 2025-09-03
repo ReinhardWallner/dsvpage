@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: CPT Update
+ * Template Name: Shared Files Data Editor
  *
  * The template for the full-width page.
  *
@@ -371,7 +371,12 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 
 	$outerArrayKeys = array_keys(($data));
 	$dataArrayKeys = $data["keys"];
-
+	// error_log("dataRowArray " . print_r($data, true));
+	error_log("dataRowArray headRow" . print_r($headRow, true));
+	$ina1 = in_array("Id", $headRow);
+	$ina3 = in_array("Title", $headRow);
+	error_log("dataRowArray ina1" . print_r($ina1, true));
+	error_log("dataRowArray ina3" . print_r($ina3, true));
 	// Datenzeilen
 	$rowIndex = 0;
 	foreach ($outerArrayKeys as $outerKey) {
@@ -379,6 +384,7 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 			$outerKey != "headrowKat" && $outerKey != "headRowSingleFields" && 
 			$outerKey != "args" && $outerKey != "total") {
 			$dataRowArray = $data[$outerKey];
+			error_log("dataRowArray " . print_r($dataRowArray, true));
 			$row = "";
 			$file_id = null;
 			$singleLineResult = null;
@@ -415,11 +421,11 @@ if ($data["headrow"] && $data["headrowKat"] && $data["keys"]) {
 						$element = $dataRowArray[$dataKey];
 
 						if ($dataKey == "file_id") {
-
 							$file_id = $element;
-							$row = "";
-							$row .= '<div class="row">
-							<div class="cell">' . $file_id . '</div>';
+							$row = '<div class="row">';
+							if(in_array("Id", $headRow)) {
+								$row .= '<div class="cell">' . $file_id . '</div>';
+							}
 						} else if ($dataKey == "title") {
 							addTitleField($row, $file_id, $element, $inputArray, $isReadonlyUser);
 						} else if ($dataKey == "description" && $nurKategorienAnzeigen == false) {
